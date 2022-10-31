@@ -65,6 +65,13 @@ function App() {
     setTheme(newTheme);
   };
 
+  const handleInput = (e) => {
+    console.log(e.keyCode);
+    if (e.keyCode === 37 || e.keyCode === 39) {
+      e.preventDefault();
+    }
+  };
+
   const handleChange = (e) => {
     setLoading(true);
     setValue(e.target.value);
@@ -124,18 +131,18 @@ function App() {
       <Sites sites={sites} loading={loading} />
       <div className="search">
         <form className="input">
-          <BiSearch className="icon" />
           {underDomain && sites?.length > 0 ? (
             <div className="underDomain">
               <img src={selected?.logo} alt={selected?.name} />
             </div>
           ) : (
-            <></>
+            <BiSearch className="icon" />
           )}
           <input
             type="text"
             placeholder="Search here...."
             value={value}
+            onKeyDown={handleInput}
             onChange={handleChange}
           />
         </form>
