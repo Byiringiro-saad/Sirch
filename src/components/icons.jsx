@@ -44,7 +44,7 @@ const Icons = ({ sites, loading }) => {
             </ContentLoader>
           ) : (
             <>
-              {sites.length > 0 ? (
+              {sites?.length > 0 ? (
                 <img src={`${sites[0]?.logo}`} alt={`${sites[0]?.name}`} />
               ) : null}
             </>

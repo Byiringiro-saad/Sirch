@@ -2,6 +2,7 @@ import axios from "axios";
 import React from "react";
 import styled from "styled-components";
 import useLocalStorage from "use-local-storage";
+import { useDispatch, useSelector } from "react-redux";
 
 //icons
 import { BiSearch } from "react-icons/bi";
@@ -13,16 +14,22 @@ import Icons from "./components/icons";
 import Command from "./components/command";
 import Suggestion from "./components/suggestion";
 import Instruction from "./components/instruction";
+import { getSitesAsync } from "./store/reducers/icons";
 
 function App() {
+  //for theme
   const defaultDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
   const [theme, setTheme] = useLocalStorage(
     "theme",
     defaultDark ? "dark" : "light"
   );
 
+  //configs
+  const dispatch = useDispatch();
+
+  //local data
   const [value, setValue] = React.useState("");
-  const [sites, setSites] = React.useState([]);
+  const sites = useSelector((state) => state.sites.sites);
   const [loading, setLoading] = React.useState(false);
   const [suggestions, setSuggestions] = React.useState([]);
   const [suggestionsActive, setSuggestionsActive] = React.useState(false);
@@ -51,6 +58,8 @@ function App() {
     },
   ]);
 
+  console.log(sites);
+
   const switchTheme = () => {
     const newTheme = theme === "light" ? "dark" : "light";
     setTheme(newTheme);
@@ -58,18 +67,9 @@ function App() {
 
   const handleChange = (e) => {
     setLoading(true);
-    setSites([]);
-    setValue(e.target.value.toLowerCase());
-
-    axios
-      .get(
-        `https://autocomplete.clearbit.com/v1/companies/suggest?query=${e.target.value.toLowerCase()}`,
-        {}
-      )
-      .then((response) => {
-        setSites(response.data);
-        setLoading(false);
-      });
+    setValue(e.target.value);
+    dispatch(getSitesAsync({ key: `${e.target.value}` }));
+    setLoading(false);
 
     if (e.nativeEvent.data === " ") {
       setTwo("Google SERP");
