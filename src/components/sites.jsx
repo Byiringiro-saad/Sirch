@@ -1,8 +1,13 @@
 import React from "react";
 import styled from "styled-components";
+import { useDispatch } from "react-redux";
 import ContentLoader from "react-content-loader";
 
+//actions
+import { selectSite } from "../store/reducers/icons";
+
 const Icons = ({ sites, loading }) => {
+  const dispatch = useDispatch();
   const [cursor, setCursor] = React.useState(0);
 
   const handleKeyDown = (e) => {
@@ -16,6 +21,10 @@ const Icons = ({ sites, loading }) => {
       }
     }
   };
+
+  React.useEffect(() => {
+    dispatch(selectSite(sites[cursor]));
+  }, [cursor]);
 
   React.useEffect(() => {
     if (sites.length === 0) {

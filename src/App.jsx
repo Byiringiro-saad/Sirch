@@ -10,7 +10,7 @@ import { CopyIcon, CopiedIcon } from "./icons/icons";
 import { BsArrowRight, BsArrowDown } from "react-icons/bs";
 
 //components
-import Icons from "./components/icons";
+import Sites from "./components/sites";
 import Command from "./components/command";
 import Suggestion from "./components/suggestion";
 import Instruction from "./components/instruction";
@@ -29,9 +29,11 @@ function App() {
 
   //local data
   const [value, setValue] = React.useState("");
-  const sites = useSelector((state) => state.sites.sites);
   const [loading, setLoading] = React.useState(false);
+  const sites = useSelector((state) => state.sites.sites);
   const [suggestions, setSuggestions] = React.useState([]);
+  const [underDomain, setUnderDomain] = React.useState(false);
+  const selected = useSelector((state) => state.sites.selected);
   const [suggestionsActive, setSuggestionsActive] = React.useState(false);
 
   //instructions
@@ -57,8 +59,6 @@ function App() {
       icon: CopiedIcon,
     },
   ]);
-
-  console.log(sites);
 
   const switchTheme = () => {
     const newTheme = theme === "light" ? "dark" : "light";
@@ -87,6 +87,20 @@ function App() {
     }
   };
 
+  const handleKeyDown = (e) => {
+    if (sites?.length > 0 && e.keyCode === 40) {
+      setUnderDomain(true);
+    }
+  };
+
+  React.useEffect(() => {
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  });
+
   React.useEffect(() => {
     setOne("Sirch the web");
     setTwo("Save current page");
@@ -97,6 +111,7 @@ function App() {
   React.useEffect(() => {
     if (sites.length === 0 && value.length === 0) {
       setLoading(false);
+      setUnderDomain(false);
     }
   }, [sites]);
 
@@ -106,10 +121,17 @@ function App() {
         <input type="checkbox" />
         <span className="slider round" onClick={switchTheme}></span>
       </label>
-      <Icons sites={sites} loading={loading} />
+      <Sites sites={sites} loading={loading} />
       <div className="search">
         <form className="input">
           <BiSearch className="icon" />
+          {underDomain && sites?.length > 0 ? (
+            <div className="underDomain">
+              <img src={selected?.logo} alt={selected?.name} />
+            </div>
+          ) : (
+            <></>
+          )}
           <input
             type="text"
             placeholder="Search here...."
@@ -258,6 +280,19 @@ const Container = styled.div`
         color: var(--text);
         font-size: 1.5em;
         margin: 10px;
+      }
+
+      .underDomain {
+        width: 10%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+
+        img {
+          width: 60%;
+        }
       }
 
       input {
