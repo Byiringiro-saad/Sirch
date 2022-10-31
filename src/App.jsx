@@ -1,4 +1,3 @@
-import axios from "axios";
 import React from "react";
 import styled from "styled-components";
 import useLocalStorage from "use-local-storage";
@@ -6,7 +5,6 @@ import { useDispatch, useSelector } from "react-redux";
 
 //icons
 import { BiSearch } from "react-icons/bi";
-import { CopyIcon, CopiedIcon } from "./icons/icons";
 import { BsArrowRight, BsArrowDown } from "react-icons/bs";
 
 //components
@@ -15,6 +13,10 @@ import Command from "./components/command";
 import Suggestion from "./components/suggestion";
 import Instruction from "./components/instruction";
 import { getSitesAsync } from "./store/reducers/icons";
+import { getSuggestionsAsync } from "./store/reducers/suggestions";
+
+//data
+import { CopyIcon, CopiedIcon } from "./data/icons";
 
 function App() {
   //for theme
@@ -31,8 +33,8 @@ function App() {
   const [value, setValue] = React.useState("");
   const [loading, setLoading] = React.useState(false);
   const sites = useSelector((state) => state.sites.sites);
-  const [suggestions, setSuggestions] = React.useState([]);
   const [underDomain, setUnderDomain] = React.useState(false);
+  const suggestions = useSelector((state) => state.suggestions.suggestions);
   const selected = useSelector((state) => state.sites.selected);
   const [suggestionsActive, setSuggestionsActive] = React.useState(false);
 
@@ -41,6 +43,8 @@ function App() {
   const [two, setTwo] = React.useState("");
   const [three, setThree] = React.useState("");
   const [five, setFive] = React.useState("");
+
+  console.log(suggestions);
 
   const [commands, setCommands] = React.useState([
     {
@@ -66,37 +70,46 @@ function App() {
   };
 
   const handleInput = (e) => {
-    console.log(e.keyCode);
     if (e.keyCode === 37 || e.keyCode === 39) {
       e.preventDefault();
     }
   };
 
   const handleChange = (e) => {
-    setLoading(true);
     setValue(e.target.value);
-    dispatch(getSitesAsync({ key: `${e.target.value}` }));
-    setLoading(false);
+    if (!underDomain) {
+      setLoading(true);
+      dispatch(getSitesAsync({ key: `${e.target.value}` }));
+      setLoading(false);
 
-    if (e.nativeEvent.data === " ") {
-      setTwo("Google SERP");
-      setThree("Results");
-      setFive("right");
-    } else if (e.target.value.length > 0) {
-      setTwo("Go to domain");
-      setThree("Pages");
-      setFive("down");
+      if (e.nativeEvent.data === " ") {
+        setTwo("Google SERP");
+        setThree("Results");
+        setFive("right");
+      } else if (e.target.value.length > 0) {
+        setTwo("Go to domain");
+        setThree("Pages");
+        setFive("down");
+      } else {
+        setOne("Sirch the web");
+        setTwo("Save current page");
+        setThree("Suggestions");
+        setFive("right");
+      }
     } else {
-      setOne("Sirch the web");
-      setTwo("Save current page");
-      setThree("Suggestions");
-      setFive("right");
+      dispatch(getSuggestionsAsync({ key: `${e.target.value}` }));
     }
   };
 
   const handleKeyDown = (e) => {
     if (sites?.length > 0 && e.keyCode === 40) {
       setUnderDomain(true);
+      setSuggestionsActive(true);
+    }
+
+    if (e.keyCode === 38) {
+      setUnderDomain(false);
+      setSuggestionsActive(false);
     }
   };
 
@@ -120,7 +133,7 @@ function App() {
       setLoading(false);
       setUnderDomain(false);
     }
-  }, [sites]);
+  }, [sites, value.length]);
 
   return (
     <Container data-theme={theme}>

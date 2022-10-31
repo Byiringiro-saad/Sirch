@@ -24,7 +24,7 @@ const Icons = ({ sites, loading }) => {
 
   React.useEffect(() => {
     dispatch(selectSite(sites[cursor]));
-  }, [cursor]);
+  }, [cursor, dispatch, sites]);
 
   React.useEffect(() => {
     if (sites.length === 0) {
@@ -46,7 +46,10 @@ const Icons = ({ sites, loading }) => {
     <Container>
       <div className={cursor === 0 ? "selected div" : "div"}>
         <div className="num red"></div>
-        <div className="gray">
+        <div
+          className="gray"
+          style={sites?.length > 0 ? { background: "var(--box)" } : {}}
+        >
           {loading ? (
             <ContentLoader>
               <rect x="0" y="0" width="100%" height="100%" />
@@ -65,7 +68,10 @@ const Icons = ({ sites, loading }) => {
       </div>
       <div className={cursor === 1 ? "selected div" : "div"}>
         <div className="num blue"></div>
-        <div className="gray">
+        <div
+          className="gray"
+          style={sites?.length > 0 ? { background: "var(--box)" } : {}}
+        >
           {loading ? (
             <ContentLoader>
               <rect x="0" y="0" width="100%" height="100%" />
@@ -84,7 +90,10 @@ const Icons = ({ sites, loading }) => {
       </div>
       <div className={cursor === 2 ? "selected div" : "div"}>
         <div className="num blue"></div>
-        <div className="gray">
+        <div
+          className="gray"
+          style={sites?.length > 0 ? { background: "var(--box)" } : {}}
+        >
           {loading ? (
             <ContentLoader>
               <rect x="0" y="0" width="100%" height="100%" />
@@ -103,7 +112,10 @@ const Icons = ({ sites, loading }) => {
       </div>
       <div className={cursor === 3 ? "selected div" : "div"}>
         <div className="num red"></div>
-        <div className="gray">
+        <div
+          className="gray"
+          style={sites?.length > 0 ? { background: "var(--box)" } : {}}
+        >
           {loading ? (
             <ContentLoader>
               <rect x="0" y="0" width="100%" height="100%" />
@@ -136,7 +148,15 @@ const Container = styled.div`
   box-shadow: var(--shadow) 0px 10px 50px;
 
   .selected {
-    background: var(--icon);
+    .gray {
+      background: #7b7b7b !important;
+    }
+
+    .name {
+      p {
+        text-decoration: underline;
+      }
+    }
   }
 
   .div {
@@ -145,6 +165,7 @@ const Container = styled.div`
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: space-between;
     position: relative;
     margin: 0 10px;
     padding: 10px;
@@ -177,8 +198,8 @@ const Container = styled.div`
     .gray {
       width: 100%;
       height: 80%;
-      /* background: var(--gray); */
-      /* border-radius: 5px; */
+      /* background: #1c1d28; */
+      border-radius: 5px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -191,7 +212,7 @@ const Container = styled.div`
 
     .name {
       width: 100%;
-      height: 20%;
+      height: 15%;
       display: flex;
       flex-direction: column;
       align-items: center;

@@ -5,9 +5,7 @@ const Suggestion = ({ suggestion }) => {
   return (
     <Container>
       <div className="left">
-        <div className="icon">
-          <suggestion.icon />
-        </div>
+        <div className="icon"></div>
         <p>{suggestion?.name}</p>
       </div>
       <div className="right">
