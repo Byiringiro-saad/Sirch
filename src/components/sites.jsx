@@ -6,11 +6,25 @@ import ContentLoader from "react-content-loader";
 //actions
 import { selectSite } from "../store/reducers/icons";
 
-const Icons = ({ sites, loading }) => {
+const Icons = ({
+  sites,
+  loading,
+  underDomain,
+  handleOne,
+  handleSuggestions,
+}) => {
   const dispatch = useDispatch();
   const [cursor, setCursor] = React.useState(0);
 
   const handleKeyDown = (e) => {
+    if (underDomain && e.keyCode === 39) {
+      handleSuggestions();
+    }
+
+    if (underDomain && e.keyCode === 37) {
+      handleSuggestions();
+    }
+
     if (cursor === 3 && e.keyCode === 39) {
       setCursor(3);
     } else {
@@ -21,6 +35,14 @@ const Icons = ({ sites, loading }) => {
       }
     }
   };
+
+  React.useEffect(() => {
+    if (underDomain) {
+      handleOne(`Sirch the ${sites[cursor]?.name}`);
+    } else {
+      handleOne(`Sirch the web`);
+    }
+  }, [underDomain, cursor]);
 
   React.useEffect(() => {
     dispatch(selectSite(sites[cursor]));
@@ -206,6 +228,7 @@ const Container = styled.div`
 
       img {
         width: 35%;
+        border-radius: 5px;
         object-position: center;
       }
     }

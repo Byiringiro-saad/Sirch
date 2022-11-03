@@ -44,8 +44,6 @@ function App() {
   const [three, setThree] = React.useState("");
   const [five, setFive] = React.useState("");
 
-  console.log(suggestions);
-
   const [commands, setCommands] = React.useState([
     {
       id: 1,
@@ -77,7 +75,7 @@ function App() {
 
   const handleChange = (e) => {
     setValue(e.target.value);
-    if (!underDomain) {
+    if (!underDomain && e.target.value.length > 0) {
       setLoading(true);
       dispatch(getSitesAsync({ key: `${e.target.value}` }));
       setLoading(false);
@@ -97,6 +95,7 @@ function App() {
         setFive("right");
       }
     } else {
+      setSuggestionsActive(true);
       dispatch(getSuggestionsAsync({ key: `${e.target.value}` }));
     }
   };
@@ -105,6 +104,7 @@ function App() {
     if (sites?.length > 0 && e.keyCode === 40) {
       setUnderDomain(true);
       setSuggestionsActive(true);
+      setValue("");
     }
 
     if (e.keyCode === 38) {
@@ -135,13 +135,27 @@ function App() {
     }
   }, [sites, value.length]);
 
+  const handleOne = (text) => {
+    setOne(text);
+  };
+
+  const handleSuggestions = () => {
+    setSuggestionsActive(false);
+  };
+
   return (
     <Container data-theme={theme}>
       <label className="switch">
         <input type="checkbox" />
         <span className="slider round" onClick={switchTheme}></span>
       </label>
-      <Sites sites={sites} loading={loading} />
+      <Sites
+        sites={sites}
+        loading={loading}
+        underDomain={underDomain}
+        handleOne={handleOne}
+        handleSuggestions={handleSuggestions}
+      />
       <div className="search">
         <form className="input">
           {underDomain && sites?.length > 0 ? (
