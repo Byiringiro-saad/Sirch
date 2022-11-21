@@ -2,17 +2,28 @@ import React from "react";
 import styled from "styled-components";
 
 import { AiOutlineEnter } from "react-icons/ai";
+import { BsArrowDown, BsArrowUp } from "react-icons/bs";
 
-const Instruction = ({ one, two, three, children }) => {
+const Instruction = ({ one, two, three, four, children, render }) => {
   return (
-    <Container>
+    <Container render={render}>
       <div className="instructions">
         <p>{one}</p>
       </div>
       <div className="commands">
         <div className="one">
           <p>{two}</p>
-          <AiOutlineEnter className="icon" />
+          {four === "down" ? (
+            <BsArrowDown className="icon" />
+          ) : (
+            <>
+              {four === "up" ? (
+                <BsArrowUp className="icon" />
+              ) : (
+                <AiOutlineEnter className="icon" />
+              )}
+            </>
+          )}
         </div>
         <div className="two">
           <p>{three}</p>
@@ -24,14 +35,18 @@ const Instruction = ({ one, two, three, children }) => {
 };
 
 const Container = styled.div`
-  width: 98%;
+  width: ${(props) => (props.render ? "650px" : "98%")};
   height: 50px;
   display: flex;
   flex-direction: row;
   align-items: center;
   padding: 0 15px;
+  border-radius: ${(props) => (props.render ? "10px 10px 0 0" : "")};
   justify-content: space-between;
-  border-top: 1px solid var(--gray);
+  border-top: ${(props) => (props.render ? "" : "1px solid var(--gray)")};
+  border: ${(props) => (props.render ? "1px solid var(--gray)" : "")};
+  position: ${(props) => (props.render ? "fixed" : "relative")};
+  bottom: 0;
 
   p {
     /* text-transform: capitalize; */
@@ -39,19 +54,26 @@ const Container = styled.div`
   }
 
   .instructions {
-    width: 35%;
+    width: 30%;
   }
 
   .commands {
-    width: 60%;
+    width: 65%;
     height: 100%;
     display: flex;
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
 
+    .one {
+      width: 60%;
+    }
+
+    .two {
+      width: 30%;
+    }
+
     div {
-      width: 45%;
       height: 50%;
       display: flex;
       flex-direction: row;

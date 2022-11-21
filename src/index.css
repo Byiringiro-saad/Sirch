@@ -9,7 +9,6 @@
   --icon: #1e1616;
   --text: #f3f3f3;
   --shadow: #b3b3b324;
-  --box: #1c1d28;
 }
 
 [data-theme="dark"] {
@@ -21,7 +20,6 @@
   --icon: #d4d4d4;
   --shadow: #00000022;
   --text: #151313;
-  --box: #d4d4d4;
 }
 
 * {
@@ -32,10 +30,10 @@
 }
 
 html,
+#vid,
 body {
-  width: 700px;
-  height: 600px;
-  /* margin: auto; */
+  /* width: max-content !important; */
   font-family: "Inter", sans-serif;
+  margin: auto !important;
   font-size: 12px;
 }

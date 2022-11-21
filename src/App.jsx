@@ -1,50 +1,62 @@
+/* eslint-disable no-unused-vars */
+import axios from "axios";
 import React from "react";
 import styled from "styled-components";
 import useLocalStorage from "use-local-storage";
-import { useDispatch, useSelector } from "react-redux";
 
 //icons
 import { BiSearch } from "react-icons/bi";
+import { CopyIcon, CopiedIcon } from "./icons/icons";
 import { BsArrowRight, BsArrowDown } from "react-icons/bs";
 
 //components
-import Sites from "./components/sites";
+import Icons from "./components/icons";
 import Command from "./components/command";
 import Suggestion from "./components/suggestion";
 import Instruction from "./components/instruction";
-import { getSitesAsync } from "./store/reducers/icons";
-import { getSuggestionsAsync } from "./store/reducers/suggestions";
-
-//data
-import { CopyIcon, CopiedIcon } from "./data/icons";
+import {
+  bingAutoSuggest,
+  getBingSearch,
+  loadHyperBeam,
+  openNewTab,
+  renderPage,
+  updateTab,
+} from "./action/bingAction";
 
 function App() {
-  //for theme
+  //theme data
   const defaultDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
   const [theme, setTheme] = useLocalStorage(
     "theme",
     defaultDark ? "dark" : "light"
   );
 
-  //configs
-  const dispatch = useDispatch();
-
   //local data
+  const [tabs, setTabs] = React.useState([]);
+  const [windowId, setWindowId] = React.useState(null);
+  const [data, setData] = React.useState([]);
   const [value, setValue] = React.useState("");
+  const [sites, setSites] = React.useState([]);
   const [loading, setLoading] = React.useState(false);
-  const sites = useSelector((state) => state.sites.sites);
-  const [underDomain, setUnderDomain] = React.useState(false);
-  const suggestions = useSelector((state) => state.suggestions.suggestions);
-  const selected = useSelector((state) => state.sites.selected);
+  const [suggestions, setSuggestions] = React.useState([]);
   const [suggestionsActive, setSuggestionsActive] = React.useState(false);
+  const [cursor, setCursor] = React.useState(0);
+  const [render, setRender] = React.useState(false);
+  const [selectedSuggestion, setSelectedSuggestion] = React.useState(-1);
+  const [underDomain, setUnderDomain] = React.useState(false);
+  const [underDomainData, setUnderDomainData] = React.useState([]);
+  const [spaceClicked, setSpaceClicked] = React.useState(false);
+  const [showSearch, setShowSearch] = React.useState(false);
 
   //instructions
   const [one, setOne] = React.useState("");
   const [two, setTwo] = React.useState("");
   const [three, setThree] = React.useState("");
+  const [four, setFour] = React.useState("");
   const [five, setFive] = React.useState("");
+  const [hb, setHb] = React.useState(null);
 
-  const [commands, setCommands] = React.useState([
+  const [commands] = React.useState([
     {
       id: 1,
       name: "Clipboard History",
@@ -67,164 +79,311 @@ function App() {
     setTheme(newTheme);
   };
 
-  const handleInput = (e) => {
-    if (e.keyCode === 37 || e.keyCode === 39) {
+  function hasWhiteSpace(s) {
+    return /\s/g.test(s);
+  }
+
+  const underDomainSearch = (key) => {
+    //not yet implemented, store data in underDomainData
+  };
+
+  const handleChange = async (e) => {
+    setLoading(true);
+    setValue(e.target.value.toLowerCase());
+
+    if (e.nativeEvent.data === " ") {
+      setTwo("Suggestions + stashed pages");
+      setThree("Results");
+      setFour("down");
+      setCursor(-1);
+      setUnderDomain(false);
+    } else if (e.target.value.length > 0) {
+      setOne("Hit space to sirch the web");
+      setFour("down");
+      setTwo("Pages");
+      setThree("Domains");
+      setCursor(0);
+      setUnderDomain(true);
+      underDomainSearch(e.target.value);
+    } else {
+      setOne("Type to Sirch the web");
+      setTwo("Save current page");
+      setThree("Suggestions");
+      setFive("right");
+    }
+
+    if (hasWhiteSpace(e.target.value)) {
+      // setSites([]);
+      const sug = await bingAutoSuggest(e.target.value);
+      setSuggestions(sug);
+      setSuggestionsActive(true);
+      await handleRenderPage(e.target.value);
+    } else {
+      companySuggest(e);
+    }
+  };
+
+  const handleRenderPage = async (value) => {
+    const data = await getBingSearch(value);
+    setData(data);
+    const tabs = await renderPage(hb, data, windowId);
+    setTabs(tabs);
+    setWindowId(tabs[0].windowId);
+  };
+
+  React.useEffect(() => {
+    if (value.length === 0) {
+      setSites([]);
+      setOne("Type to Sirch the web");
+      setTwo("Save current page");
+      setFour("");
+      setThree("Suggestions");
+      setFive("right");
+    }
+
+    if (!hasWhiteSpace(value)) {
+      setSpaceClicked(false);
+    }
+
+    if (hasWhiteSpace(value)) {
+      setSpaceClicked(true);
+    }
+  }, [value]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+  };
+
+  const handleTabUpdate = async (id) => {
+    await updateTab(hb, id);
+  };
+
+  React.useEffect(() => {
+    const container = document.getElementById("container");
+
+    loadHyperBeam(container)
+      .then((hyperbeam) => {
+        setHb(hyperbeam);
+      })
+      .catch((err) => {
+        console.error(err);
+      });
+    return () => {
+      hb && hb.destroy();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleKeyPressed = (e) => {
+    if (
+      e.keyCode === 37 ||
+      e.keyCode === 39 ||
+      e.keyCode === 38 ||
+      e.keyCode === 40
+    ) {
       e.preventDefault();
     }
   };
 
-  const handleChange = (e) => {
-    setValue(e.target.value);
-    if (!underDomain && e.target.value.length > 0) {
-      setLoading(true);
-      dispatch(getSitesAsync({ key: `${e.target.value}` }));
-      setLoading(false);
-
-      if (e.nativeEvent.data === " ") {
-        setTwo("Google SERP");
-        setThree("Results");
-        setFive("right");
-      } else if (e.target.value.length > 0) {
-        setTwo("Go to domain");
-        setThree("Pages");
-        setFive("down");
-      } else {
-        setOne("Sirch the web");
-        setTwo("Save current page");
-        setThree("Suggestions");
-        setFive("right");
-      }
-    } else {
-      setSuggestionsActive(true);
-      dispatch(getSuggestionsAsync({ key: `${e.target.value}` }));
-    }
-  };
-
   const handleKeyDown = (e) => {
-    if (sites?.length > 0 && e.keyCode === 40) {
-      setUnderDomain(true);
-      setSuggestionsActive(true);
-      setValue("");
+    if (e.keyCode === 40 && selectedSuggestion < suggestions.length - 1) {
+      setSelectedSuggestion(selectedSuggestion + 1);
     }
 
-    if (e.keyCode === 38) {
-      setUnderDomain(false);
-      setSuggestionsActive(false);
+    if (e.keyCode === 38 && selectedSuggestion > -1) {
+      setSelectedSuggestion(selectedSuggestion - 1);
+    }
+
+    if (e.keyCode === 13 && cursor > -1) {
+      console.log("we goo", sites[cursor]);
+    }
+
+    if (e.keyCode === 13 && selectedSuggestion > -1) {
+      window.open(`${suggestions[selectedSuggestion]?.url}`, "__blank");
+    }
+
+    //user hits any character apart from arrow keys when in hyperbeam
+    if (
+      render &&
+      (e.keyCode !== 40 ||
+        e.keyCode !== 38 ||
+        e.keyCode !== 37 ||
+        e.keyCode !== 39)
+    ) {
+      setRender(false);
     }
   };
 
   React.useEffect(() => {
-    window.addEventListener("keydown", handleKeyDown);
+    if (spaceClicked) {
+      setRender(true);
+      setOne("Type to Sirch the web");
+      setTwo("Upvote");
+      setThree("Next result");
+      setFour("up");
+    }
+  }, [cursor]);
 
+  React.useEffect(() => {
+    window.addEventListener("keydown", handleKeyDown);
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
   });
 
   React.useEffect(() => {
-    setOne("Sirch the web");
-    setTwo("Save current page");
-    setThree("Suggestions");
-    setFive("right");
-  }, []);
-
-  React.useEffect(() => {
     if (sites.length === 0 && value.length === 0) {
       setLoading(false);
-      setUnderDomain(false);
     }
   }, [sites, value.length]);
 
-  const handleOne = (text) => {
-    setOne(text);
-  };
-
-  const handleSuggestions = () => {
-    setSuggestionsActive(false);
-  };
-
   return (
-    <Container data-theme={theme}>
-      <label className="switch">
-        <input type="checkbox" />
-        <span className="slider round" onClick={switchTheme}></span>
-      </label>
-      <Sites
-        sites={sites}
-        loading={loading}
-        underDomain={underDomain}
-        handleOne={handleOne}
-        handleSuggestions={handleSuggestions}
-      />
-      <div className="search">
-        <form className="input">
-          {underDomain && sites?.length > 0 ? (
-            <div className="underDomain">
-              <img src={selected?.logo} alt={selected?.name} />
-            </div>
-          ) : (
-            <BiSearch className="icon" />
-          )}
-          <input
-            type="text"
-            placeholder="Search here...."
-            value={value}
-            onKeyDown={handleInput}
-            onChange={handleChange}
-          />
-        </form>
-        {suggestionsActive && (
-          <div className="section">
-            <div className="title">
-              <p>Suggestions</p>
-            </div>
-            <div className="content">
-              {suggestions.length > 0 ? (
-                suggestions.map((suggestion) => (
-                  <Suggestion suggestion={suggestion} key={suggestion?.id} />
-                ))
-              ) : (
-                <div className="para">
-                  <p>No suggestions</p>
+    <>
+      <Container data-theme={theme}>
+        {/* <label className="switch">
+					<input type="checkbox" />
+					<span className="slider round" onClick={switchTheme}></span>
+				</label> */}
+        <Icons
+          sites={sites}
+          tabs={tabs}
+          data={data}
+          loading={loading}
+          handleRender={(id) => handleTabUpdate(id)}
+          render={render}
+          cursor={cursor}
+          setCursor={(x) => {
+            setCursor(x);
+          }}
+        />
+        <div className="search">
+          {!render && (
+            <>
+              <form className="input" onSubmit={handleSubmit}>
+                {underDomain && sites?.length > 0 ? (
+                  <div className="underDomain">
+                    <img src={sites[cursor]?.logo} alt={sites[cursor]?.name} />
+                  </div>
+                ) : (
+                  <BiSearch className="icon" />
+                )}
+                <input
+                  type="text"
+                  placeholder="Search here...."
+                  value={value}
+                  onKeyDown={handleKeyPressed}
+                  onChange={handleChange}
+                />
+              </form>
+              <div className="container">
+                {underDomain ? (
+                  <div className="section">
+                    <div className="title">
+                      <p>Found</p>
+                    </div>
+                    <div className="content">
+                      <p>Nothing found in the selected site</p>
+                    </div>
+                  </div>
+                ) : (
+                  <></>
+                )}
+                {suggestionsActive && (
+                  <div className="section">
+                    <div className="title">
+                      <p>Suggestions</p>
+                    </div>
+                    <div className="content">
+                      {suggestions.length > 0 ? (
+                        suggestions
+                          .slice(0, 5)
+                          .map((suggestion, index) => (
+                            <Suggestion
+                              suggestion={suggestion}
+                              key={index}
+                              selected={selectedSuggestion === index}
+                              handleRenderPage={(query) =>
+                                handleRenderPage(query)
+                              }
+                            />
+                          ))
+                      ) : (
+                        <div className="para">
+                          <p>No suggestions</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+                <div className="section">
+                  <div className="title">
+                    <p>Commands</p>
+                  </div>
+                  <div className="content">
+                    {commands.map((command) => (
+                      <Command command={command} key={command?.id} />
+                    ))}
+                  </div>
                 </div>
-              )}
-            </div>
-          </div>
-        )}
-        <div className="section">
-          <div className="title">
-            <p>Commands</p>
-          </div>
-          <div className="content">
-            {commands.map((command) => (
-              <Command command={command} key={command?.id} />
-            ))}
-          </div>
-        </div>
-        <Instruction one={one} two={two} three={three} icon={five}>
-          {five === "right" ? (
-            <BsArrowRight className="icon" />
-          ) : (
-            <BsArrowDown className="icon" />
+              </div>
+            </>
           )}
-        </Instruction>
-      </div>
-    </Container>
+          <Instruction
+            one={one}
+            two={two}
+            three={three}
+            four={four}
+            render={render}
+            icon={five}
+          >
+            {five === "right" ? (
+              <BsArrowRight className="icon" />
+            ) : (
+              <BsArrowDown className="icon" />
+            )}
+          </Instruction>
+        </div>
+      </Container>
+      <div
+        title="render"
+        id="container"
+        style={
+          !render
+            ? { height: "0vh", width: "0vw" }
+            : { height: "100%", width: "100%" }
+        }
+      />
+    </>
   );
+
+  function companySuggest(e) {
+    axios
+      .get(
+        `https://autocomplete.clearbit.com/v1/companies/suggest?query=${e.target.value.toLowerCase()}`,
+        {}
+      )
+      .then((response) => {
+        setSites(response.data);
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  }
 }
 
 const Container = styled.div`
-  width: 100vw;
-  height: 100vh;
-  /* padding: 50px 0; */
-  /* background: var(--black); */
+  width: 650px;
+  /* height: auto; */
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-start;
+  z-index: 1000;
+  position: absolute;
+  top: 0;
+  left: calc(50% - 650px / 2);
 
   .switch {
-    /* position: relative; */
     display: inline-block;
     width: 60px;
     height: 34px;
@@ -325,7 +484,7 @@ const Container = styled.div`
         overflow: hidden;
 
         img {
-          width: 60%;
+          width: 50%;
         }
       }
 
@@ -337,6 +496,16 @@ const Container = styled.div`
         outline: none;
         color: var(--white);
       }
+    }
+
+    .container {
+      width: 100%;
+      height: 350px;
+      overflow-y: scroll;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
     }
 
     .section {
@@ -359,6 +528,9 @@ const Container = styled.div`
 
       .content {
         width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
 
         .para {
           width: 100%;
