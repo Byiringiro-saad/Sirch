@@ -31,8 +31,8 @@ function App() {
   const [windowId, setWindowId] = React.useState(null);
   const [data, setData] = React.useState([]);
   const [value, setValue] = React.useState("");
+  const [backupValue, setBackupValue] = React.useState("");
   const [sites, setSites] = React.useState([]);
-  const [loading, setLoading] = React.useState(false);
   const [suggestions, setSuggestions] = React.useState([]);
   const [suggestionsActive, setSuggestionsActive] = React.useState(false);
   const [cursor, setCursor] = React.useState(0);
@@ -108,7 +108,7 @@ function App() {
   ]);
 
   const switchTheme = () => {
-    const newTheme = theme === "light" ? "dark" : "light";
+    const newTheme = theme === "light" ? "light" : "dark";
     setTheme(newTheme);
   };
 
@@ -121,52 +121,70 @@ function App() {
   };
 
   const handleChange = async (e) => {
-    setLoading(true);
     setValue(e.target.value.toLowerCase());
 
-    if (e.target.value.length > 0) {
-      setOne("Hit space to sirch the web");
-      setFour("down");
-      setFive("right");
-      setTwo("Pages");
-      setThree("Domains");
-      underDomainSearch(e.target.value);
-    }
+    if (!underDomain) {
+      if (e.target.value.length > 0) {
+        setOne("Hit space to sirch the web");
+        setFour("down");
+        setFive("right");
+        setTwo("Pages");
+        setThree("Domains");
+        underDomainSearch(e.target.value);
+      }
 
-    if (hasWhiteSpace(e.target.value)) {
-      //changing the instructions
-      setTwo("Suggestions + stashed pages");
-      setThree("Results");
-      setFour("down");
-      setFive("right");
-      setUnderDomain(false);
+      if (hasWhiteSpace(e.target.value)) {
+        //changing the instructions
+        setTwo("Suggestions + stashed pages");
+        setThree("Results");
+        setFour("down");
+        setFive("right");
+        setUnderDomain(false);
 
-      //removing the current icons
-      setSites([]);
+        //removing the current icons
+        setSites([]);
 
-      //getting suggestions from bing api
-      const sug = await bingAutoSuggest(e.target.value);
-      setSuggestions(sug);
-      await handleRenderPage(e.target.value);
+        //getting suggestions from bing api
+        const sug = await bingAutoSuggest(e.target.value);
+        setSuggestions(sug);
+        await handleRenderPage(e.target.value);
+      } else {
+        companySuggest(e);
+      }
     } else {
-      companySuggest(e);
+      //todo
     }
   };
 
   React.useEffect(() => {
-    if (!hasWhiteSpace(value)) {
+    if (
+      !hasWhiteSpace(value) &&
+      suggestionsActive &&
+      selectedSuggestion === -1
+    ) {
       setSpaceClicked(false);
       setCursor(0);
       setSuggestionsActive(false);
+      setSelectedSuggestion(-1);
     }
 
-    if (hasWhiteSpace(value)) {
+    if (
+      hasWhiteSpace(value) &&
+      !suggestionsActive &&
+      selectedSuggestion === -1
+    ) {
       setSpaceClicked(true);
       setCursor(-1);
       setSuggestionsActive(true);
     }
 
-    if (value.length === 0) {
+    if (value.length === 0 && !underDomain) {
+      setSuggestionsActive(false);
+      setSelectedSuggestion(-1);
+      setSites([]);
+    }
+
+    if (value.length === 0 && suggestionsActive) {
       setSites([]);
     }
   }, [value]);
@@ -190,6 +208,7 @@ function App() {
       .catch((err) => {
         console.error(err);
       });
+
     return () => {
       hb && hb.destroy();
     };
@@ -216,31 +235,50 @@ function App() {
   };
 
   const handleKeyDown = (e) => {
+    //Down
     if (
       e.keyCode === 40 &&
       suggestionsActive &&
       selectedSuggestion < suggestions.length - 1
     ) {
+      setBackupValue(value);
+      setValue(suggestions[selectedSuggestion + 1]?.displayText);
       setSelectedSuggestion(selectedSuggestion + 1);
     }
 
+    //Down
     if (e.keyCode === 40 && !suggestionsActive) {
+      setBackupValue(value);
+      setValue("");
       setUnderDomain(true);
     }
 
+    //Up
     if (e.keyCode === 38 && !suggestionsActive) {
+      setValue(backupValue);
+      setBackupValue("");
       setUnderDomain(false);
     }
 
-    if (e.keyCode === 38 && suggestionsActive && selectedSuggestion > -1) {
+    //Up
+    if (e.keyCode === 38 && suggestionsActive && selectedSuggestion > 0) {
+      setBackupValue(value);
+      setValue(suggestions[selectedSuggestion - 1]?.displayText);
       setSelectedSuggestion(selectedSuggestion - 1);
     }
 
+    //Up
+    if (e.keyCode === 38 && suggestionsActive && selectedSuggestion === 0) {
+      setValue(backupValue);
+      setBackupValue("");
+    }
+
+    //Enter
     if (e.keyCode === 13 && cursor > -1 && !render) {
-      console.log("we goo", sites[cursor]);
       window.open(`https://${sites[cursor]?.domain}`, "__blank");
     }
 
+    //Enter
     if (e.keyCode === 13 && selectedSuggestion > -1 && !render) {
       window.open(`${suggestions[selectedSuggestion]?.url}`, "__blank");
     }
@@ -280,12 +318,6 @@ function App() {
     setOne("Type to Sirch domains");
   }, []);
 
-  React.useEffect(() => {
-    if (sites.length === 0 && value.length === 0) {
-      setLoading(false);
-    }
-  }, [sites, value.length]);
-
   return (
     <>
       <Container data-theme={theme}>
@@ -297,7 +329,6 @@ function App() {
           sites={sites}
           tabs={tabs}
           data={data}
-          loading={loading}
           handleRender={(id) => handleTabUpdate(id)}
           render={render}
           cursor={cursor}
@@ -416,7 +447,6 @@ function App() {
               domains.find((d) => d.domain_name === site.domain)?.count || 0,
           }))
         );
-        setLoading(false);
       })
       .catch((error) => {
         console.log(error);
