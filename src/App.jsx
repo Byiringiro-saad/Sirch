@@ -49,6 +49,8 @@ function App() {
   const [three, setThree] = React.useState("");
   const [four, setFour] = React.useState("");
   const [five, setFive] = React.useState("");
+  const [six, setSix] = React.useState("");
+  const [seven, setSeven] = React.useState("");
   const [hb, setHb] = React.useState(null);
 
   // supabase related state
@@ -125,12 +127,28 @@ function App() {
 
     if (!underDomain) {
       if (e.target.value.length > 0) {
-        setOne("Hit space to sirch the web");
-        setFour("down");
+        setOne("Type word(s) & hit [space] to Sirch");
+        setFour("enter");
+        setTwo("Go");
         setFive("right");
-        setTwo("Pages");
         setThree("Domains");
+        setSix("down");
+        setSeven("Pages");
         underDomainSearch(e.target.value);
+      }
+
+      if (e.target.value.length > 2) {
+        setOne("Press [right arrow] to view search results");
+        setFour("down");
+        setTwo("Suggestions & stashed pages");
+        setFive("right");
+        setThree("Domains");
+        setSix("");
+        setSeven("");
+      }
+
+      if (e.target.value.length === 1) {
+        setCursor(0);
       }
 
       if (hasWhiteSpace(e.target.value)) {
@@ -139,6 +157,7 @@ function App() {
         setThree("Results");
         setFour("down");
         setFive("right");
+        setOne("Press [right arrow] to view search results");
         setUnderDomain(false);
 
         //removing the current icons
@@ -305,17 +324,14 @@ function App() {
   React.useEffect(() => {
     if (hasWhiteSpace(value) && cursor > -1) {
       setRender(true);
-      setFour("up");
-      setTwo("Upvote");
+      setOne("Press the [up arrow] to upvote");
       setFive("right");
-      setThree("Next result");
-      setOne("Type to Sirch the web");
+      setThree("More results");
     }
   }, [cursor]);
 
   React.useEffect(() => {
-    setTwo("Save current page");
-    setOne("Type to Sirch domains");
+    setOne("Type any character to begin");
   }, []);
 
   return (
@@ -417,6 +433,8 @@ function App() {
             render={render}
             icon={five}
             five={five}
+            six={six}
+            seven={seven}
           />
         </div>
       </Container>

@@ -204,8 +204,8 @@ const Container = styled.div`
     cursor: pointer;
 
     .num {
-      width: 25px;
-      height: 25px;
+      width: 20px;
+      height: 20px;
       color: #ffffff;
       display: flex;
       align-items: center;
@@ -213,7 +213,7 @@ const Container = styled.div`
       border-radius: 50%;
       position: absolute;
       top: 5px;
-      right: -5px;
+      right: 0px;
       background: var(--red);
     }
 

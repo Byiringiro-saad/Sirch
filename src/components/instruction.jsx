@@ -4,7 +4,7 @@ import styled from "styled-components";
 import { AiOutlineEnter } from "react-icons/ai";
 import { BsArrowDown, BsArrowUp, BsArrowRight } from "react-icons/bs";
 
-const Instruction = ({ one, two, three, four, render, five }) => {
+const Instruction = ({ one, two, three, four, render, five, six, seven }) => {
   return (
     <Container render={render}>
       <div className="instructions">
@@ -20,7 +20,13 @@ const Instruction = ({ one, two, three, four, render, five }) => {
               {four === "up" ? (
                 <BsArrowUp className="icon" />
               ) : (
-                <AiOutlineEnter className="icon" />
+                <>
+                  {four === "enter" ? (
+                    <AiOutlineEnter className="icon" />
+                  ) : (
+                    <></>
+                  )}
+                </>
               )}
             </>
           )}
@@ -29,6 +35,14 @@ const Instruction = ({ one, two, three, four, render, five }) => {
           <div className="two">
             <p>{three}</p>
             <BsArrowRight className="icon" />
+          </div>
+        ) : (
+          <></>
+        )}
+        {six === "down" ? (
+          <div className="two">
+            <p>{seven}</p>
+            <BsArrowDown className="icon" />
           </div>
         ) : (
           <></>
@@ -58,26 +72,25 @@ const Container = styled.div`
   }
 
   .instructions {
-    width: 30%;
+    width: 40%;
   }
 
   .commands {
-    width: 65%;
+    width: 60%;
     height: 100%;
     display: flex;
     flex-direction: row;
     align-items: center;
     justify-content: flex-end;
 
-    .one {
-      width: 60%;
-    }
-
     .two {
-      width: 30%;
+      border-left: 1px solid var(--gray);
+      margin: 0 0 0 5px;
+      padding: 0 0 0 5px;
     }
 
     div {
+      width: auto;
       height: 50%;
       display: flex;
       flex-direction: row;
@@ -92,10 +105,6 @@ const Container = styled.div`
         border-radius: 2px;
         margin: 0 10px;
       }
-    }
-
-    .two {
-      border-left: 1px solid var(--gray);
     }
   }
 `;
