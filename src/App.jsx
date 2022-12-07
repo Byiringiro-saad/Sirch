@@ -16,6 +16,7 @@ import Instruction from "./components/instruction";
 import { bingAutoSuggest, getBingSearch } from "./action/bingAction";
 import { loadHyperBeam, renderPage, updateTab } from "./action/hyperBeam";
 import { getSavedDomains } from "./action/supabaseAction";
+import Page from "./components/page";
 
 function App() {
   //theme data
@@ -39,7 +40,16 @@ function App() {
   const [render, setRender] = React.useState(false);
   const [selectedSuggestion, setSelectedSuggestion] = React.useState(-1);
   const [underDomain, setUnderDomain] = React.useState(false);
-  const [underDomainData, setUnderDomainData] = React.useState([]);
+  const [underDomainData, setUnderDomainData] = React.useState([
+    "Home",
+    "About Us",
+    "Contact Us",
+    "Explore",
+    "Login",
+    "Signup",
+  ]);
+  const [underDomainFilterd, setUnderDomainFilterd] = React.useState([]);
+  const [selectedPage, setSelectedPage] = React.useState(-1);
   const [spaceClicked, setSpaceClicked] = React.useState(false);
   const [showSearch, setShowSearch] = React.useState(false);
 
@@ -163,13 +173,13 @@ function App() {
 
       if (hasWhiteSpace(e.target.value)) {
         //changing the instructions
-        setTwo("Suggestions + stashed pages");
-        setThree("Results");
-        setFour("down");
-        setFive("right");
+        setTwo("Go");
+        setThree("");
+        setFour("enter");
+        setFive("");
         setOne("two");
-        setSix("");
-        setSeven("");
+        setSix("down");
+        setSeven("Suggestions & stashed pages");
         setUnderDomain(false);
 
         //removing the current icons
@@ -184,6 +194,11 @@ function App() {
       }
     } else {
       //todo
+      const filterd = underDomainData.filter((d) =>
+        d.toLowerCase().includes(e.target.value.toLowerCase())
+      );
+
+      setUnderDomainFilterd(filterd);
     }
   };
 
@@ -278,17 +293,32 @@ function App() {
     }
 
     //Down
-    if (e.keyCode === 40 && !suggestionsActive) {
+    if (e.keyCode === 40 && !suggestionsActive && selectedPage === -1) {
       setBackupValue(value);
       setValue("");
       setUnderDomain(true);
     }
 
+    //Down
+    if (
+      e.keyCode === 40 &&
+      underDomain &&
+      selectedPage < underDomainData.length - 1
+    ) {
+      setSelectedPage(selectedPage + 1);
+    }
+
     //Up
-    if (e.keyCode === 38 && !suggestionsActive) {
+    if (e.keyCode === 38 && underDomain && selectedPage > 0) {
+      setSelectedPage(selectedPage - 1);
+    }
+
+    //Up
+    if (e.keyCode === 38 && !suggestionsActive && selectedPage === 0) {
       setValue(backupValue);
       setBackupValue("");
       setUnderDomain(false);
+      setSelectedPage(-1);
     }
 
     //Up
@@ -367,6 +397,7 @@ function App() {
           setCursor={(x) => {
             setCursor(x);
           }}
+          underDomain={underDomain}
           updateSupabaseDomainCount={handleSupabaseDomainCount}
         />
         <div className="search">
@@ -395,7 +426,19 @@ function App() {
                       <p>Found</p>
                     </div>
                     <div className="content">
-                      <p>Nothing found in the selected site</p>
+                      {underDomainFilterd.length > 0
+                        ? underDomainFilterd.map((site, index) => (
+                            <Page
+                              page={site}
+                              selected={selectedPage === index}
+                            />
+                          ))
+                        : underDomainData.map((page, index) => (
+                            <Page
+                              page={page}
+                              selected={selectedPage === index}
+                            />
+                          ))}
                     </div>
                   </div>
                 ) : (
@@ -668,6 +711,11 @@ const Container = styled.div`
         display: flex;
         flex-direction: column;
         align-items: center;
+
+        > p {
+          width: 100%;
+          line-height: 25px;
+        }
 
         .para {
           width: 100%;

@@ -14,6 +14,7 @@ const Icons = ({
   handleRender,
   cursor,
   setCursor,
+  underDomain,
   render,
   updateSupabaseDomainCount,
 }) => {
@@ -77,7 +78,7 @@ const Icons = ({
         // save domain counter in supabase when arrow up key pressed
         console.log({ cursor, domain: sites[cursor].domain });
         const { data, error } = await addDomain(sites[cursor].domain);
-        if (data && cursor > -1) {
+        if (data && cursor > -1 && !underDomain) {
           //sites[cursor].count = data.count;
           updateSupabaseDomainCount(sites);
         }
