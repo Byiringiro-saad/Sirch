@@ -126,8 +126,18 @@ function App() {
     setValue(e.target.value.toLowerCase());
 
     if (!underDomain) {
+      if (e.target.value.length === 0) {
+        setOne("Type any character to begin");
+        setFour("");
+        setTwo("");
+        setFive("");
+        setThree("");
+        setSix("");
+        setSeven("");
+      }
+
       if (e.target.value.length > 0) {
-        setOne("Type word(s) & hit [space] to Sirch");
+        setOne("one");
         setFour("enter");
         setTwo("Go");
         setFive("right");
@@ -138,7 +148,7 @@ function App() {
       }
 
       if (e.target.value.length > 2) {
-        setOne("Press [right arrow] to view search results");
+        setOne("two");
         setFour("down");
         setTwo("Suggestions & stashed pages");
         setFive("right");
@@ -157,7 +167,9 @@ function App() {
         setThree("Results");
         setFour("down");
         setFive("right");
-        setOne("Press [right arrow] to view search results");
+        setOne("two");
+        setSix("");
+        setSeven("");
         setUnderDomain(false);
 
         //removing the current icons
@@ -324,9 +336,13 @@ function App() {
   React.useEffect(() => {
     if (hasWhiteSpace(value) && cursor > -1) {
       setRender(true);
-      setOne("Press the [up arrow] to upvote");
-      setFive("right");
+      setOne("three");
+      setTwo("");
       setThree("More results");
+      setFour("");
+      setFive("right");
+      setSix("");
+      setSeven("");
     }
   }, [cursor]);
 

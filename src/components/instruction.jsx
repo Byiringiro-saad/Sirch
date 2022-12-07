@@ -4,11 +4,19 @@ import styled from "styled-components";
 import { AiOutlineEnter } from "react-icons/ai";
 import { BsArrowDown, BsArrowUp, BsArrowRight } from "react-icons/bs";
 
+//instructions
+import One from "./instructions/one";
+import Two from "./instructions/two";
+import Three from "./instructions/three";
+
 const Instruction = ({ one, two, three, four, render, five, six, seven }) => {
   return (
     <Container render={render}>
       <div className="instructions">
-        <p>{one}</p>
+        {one === "one" && <One />}
+        {one === "two" && <Two />}
+        {one === "three" && <Three />}
+        {one !== "one" && one !== "two" && one !== "three" && one}
       </div>
       <div className="commands">
         <div className="one">
