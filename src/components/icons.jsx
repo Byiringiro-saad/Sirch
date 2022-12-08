@@ -15,6 +15,7 @@ const Icons = ({
   cursor,
   setCursor,
   underDomain,
+  visibleSites,
   render,
   updateSupabaseDomainCount,
 }) => {
@@ -119,7 +120,7 @@ const Icons = ({
   };
 
   return (
-    <Container>
+    <Container visible={visibleSites}>
       {currentBingRecord?.length > 0
         ? currentBingRecord?.map((tab, index) =>
             iconNav(
@@ -177,7 +178,8 @@ const Container = styled.div`
   display: flex;
   flex-direction: row;
   align-items: center;
-  box-shadow: var(--shadow) 0px 10px 50px;
+  box-shadow: ${(props) =>
+    props.visible ? "var(--shadow) 0px 10px 50px" : "none"};
 
   .selected {
     .gray {

@@ -34,6 +34,7 @@ function App() {
   const [value, setValue] = React.useState("");
   const [backupValue, setBackupValue] = React.useState("");
   const [sites, setSites] = React.useState([]);
+  const [visibleSites, setVisibleSites] = React.useState(false);
   const [suggestions, setSuggestions] = React.useState([]);
   const [suggestionsActive, setSuggestionsActive] = React.useState(false);
   const [cursor, setCursor] = React.useState(0);
@@ -52,6 +53,7 @@ function App() {
   const [selectedPage, setSelectedPage] = React.useState(-1);
   const [spaceClicked, setSpaceClicked] = React.useState(false);
   const [showSearch, setShowSearch] = React.useState(false);
+  const [showInstructions, setShowInstructions] = React.useState(false);
 
   //instructions
   const [one, setOne] = React.useState("");
@@ -137,6 +139,7 @@ function App() {
 
     if (!underDomain) {
       if (e.target.value.length === 0) {
+        setVisibleSites(false);
         setOne("Type any character to begin");
         setFour("");
         setTwo("");
@@ -147,6 +150,7 @@ function App() {
       }
 
       if (e.target.value.length > 0) {
+        setVisibleSites(true);
         setOne("one");
         setFour("enter");
         setTwo("Go");
@@ -297,6 +301,7 @@ function App() {
       setBackupValue(value);
       setValue("");
       setUnderDomain(true);
+      setSelectedPage(0);
     }
 
     //Down
@@ -382,7 +387,10 @@ function App() {
 
   return (
     <>
-      <Container data-theme={theme}>
+      <Container data-theme={theme} instructions={showInstructions}>
+        <div className="logo">
+          <img src="/logo.png" alt="Sirch" />
+        </div>
         {/* <label className="switch">
 					<input type="checkbox" />
 					<span className="slider round" onClick={switchTheme}></span>
@@ -397,9 +405,11 @@ function App() {
           setCursor={(x) => {
             setCursor(x);
           }}
+          visibleSites={visibleSites}
           underDomain={underDomain}
           updateSupabaseDomainCount={handleSupabaseDomainCount}
         />
+
         <div className="search">
           {!render && (
             <>
@@ -419,83 +429,126 @@ function App() {
                   onChange={handleChange}
                 />
               </form>
-              <div className="container">
-                {underDomain ? (
-                  <div className="section">
-                    <div className="title">
-                      <p>Found</p>
-                    </div>
-                    <div className="content">
-                      {underDomainFilterd.length > 0
-                        ? underDomainFilterd.map((site, index) => (
-                            <Page
-                              page={site}
-                              selected={selectedPage === index}
-                            />
-                          ))
-                        : underDomainData.map((page, index) => (
-                            <Page
-                              page={page}
-                              selected={selectedPage === index}
-                            />
-                          ))}
-                    </div>
-                  </div>
-                ) : (
-                  <></>
-                )}
-                {suggestionsActive && (
-                  <div className="section">
-                    <div className="title">
-                      <p>Suggestions</p>
-                    </div>
-                    <div className="content">
-                      {suggestions?.length > 0 ? (
-                        suggestions
-                          .slice(0, 5)
-                          .map((suggestion, index) => (
-                            <Suggestion
-                              suggestion={suggestion}
-                              key={index}
-                              selected={selectedSuggestion === index}
-                              handleRenderPage={(query) =>
-                                handleRenderPage(query)
-                              }
-                            />
-                          ))
-                      ) : (
-                        <div className="para">
-                          <p>No suggestions</p>
+              {visibleSites ? (
+                <>
+                  <div className="container">
+                    {underDomain ? (
+                      <div className="section">
+                        <div className="title">
+                          <p>Found</p>
                         </div>
-                      )}
+                        <div className="content">
+                          {underDomainFilterd.length > 0
+                            ? underDomainFilterd.map((site, index) => (
+                                <Page
+                                  page={site}
+                                  selected={selectedPage === index}
+                                />
+                              ))
+                            : underDomainData.map((page, index) => (
+                                <Page
+                                  page={page}
+                                  selected={selectedPage === index}
+                                />
+                              ))}
+                        </div>
+                      </div>
+                    ) : (
+                      <></>
+                    )}
+                    {suggestionsActive && (
+                      <div className="section">
+                        <div className="title">
+                          <p>Suggestions</p>
+                        </div>
+                        <div className="content">
+                          {suggestions?.length > 0 ? (
+                            suggestions
+                              .slice(0, 5)
+                              .map((suggestion, index) => (
+                                <Suggestion
+                                  suggestion={suggestion}
+                                  key={index}
+                                  selected={selectedSuggestion === index}
+                                  handleRenderPage={(query) =>
+                                    handleRenderPage(query)
+                                  }
+                                />
+                              ))
+                          ) : (
+                            <div className="para">
+                              <p>No suggestions</p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                    <div className="section">
+                      <div className="title">
+                        <p>Commands</p>
+                      </div>
+                      <div className="content">
+                        {commands.map((command) => (
+                          <Command command={command} key={command?.id} />
+                        ))}
+                      </div>
                     </div>
                   </div>
-                )}
-                <div className="section">
-                  <div className="title">
-                    <p>Commands</p>
-                  </div>
-                  <div className="content">
-                    {commands.map((command) => (
-                      <Command command={command} key={command?.id} />
-                    ))}
-                  </div>
-                </div>
-              </div>
+                </>
+              ) : (
+                <></>
+              )}
             </>
           )}
-          <Instruction
-            one={one}
-            two={two}
-            three={three}
-            four={four}
-            render={render}
-            icon={five}
-            five={five}
-            six={six}
-            seven={seven}
-          />
+          {showInstructions ? (
+            <>
+              <Instruction
+                one={one}
+                two={two}
+                three={three}
+                four={four}
+                render={render}
+                icon={five}
+                five={five}
+                six={six}
+                seven={seven}
+              />
+            </>
+          ) : (
+            <></>
+          )}
         </div>
+        {visibleSites ? (
+          <></>
+        ) : (
+          <div className="animation">
+            <div className="landing-animation">
+              <div className="sine-wave">
+                <svg
+                  className="svg-waves"
+                  xmlns="http://www.w3.org/2000/svg"
+                  xmlnsXlink="http://www.w3.org/1999/xlink"
+                  viewBox="0 24 150 28"
+                  preserveAspectRatio="none"
+                  shapeRendering="auto"
+                >
+                  <defs>
+                    <path
+                      id="gentle-wave"
+                      d="M-160 44c30 0 58-18 88-18s 58 18 88 18 58-18 88-18 58 18 88 18 v44h-352z"
+                    ></path>
+                  </defs>
+                  <g className="svg-waves__parallax">
+                    <use xlinkHref="#gentle-wave" x="48" y="0"></use>
+                    <use xlinkHref="#gentle-wave" x="48" y="3"></use>
+                    <use xlinkHref="#gentle-wave" x="48" y="5"></use>
+                    <use xlinkHref="#gentle-wave" x="48" y="7"></use>
+                  </g>
+                </svg>
+              </div>
+            </div>
+          </div>
+        )}
       </Container>
       <div
         title="render"
@@ -541,6 +594,23 @@ const Container = styled.div`
   position: absolute;
   top: 0;
   left: calc(50% - 650px / 2);
+
+  .logo {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    border-radius: 10px;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    box-shadow: var(--shadow) 0px 10px 50px;
+
+    img {
+      width: 60%;
+    }
+  }
 
   .switch {
     display: inline-block;
@@ -622,11 +692,12 @@ const Container = styled.div`
     form {
       width: 98%;
       height: 50px;
-      border-bottom: 1px solid var(--gray);
+      border-bottom: ${(props) =>
+        props.instructions ? "1px solid var(--gray)" : "none"};
       display: flex;
       align-items: center;
       justify-content: center;
-      margin: 0 0 10px 0;
+      margin: ${(props) => (props.instructions ? "0 0 10px 0" : "0")};
 
       .icon {
         color: var(--text);
@@ -728,6 +799,90 @@ const Container = styled.div`
           }
         }
       }
+    }
+  }
+
+  .landing-animation {
+    height: 150px;
+    width: 100%;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    overflow: hidden;
+    text-align: center;
+    font-size: 28px;
+  }
+
+  /* Sine Wave Animation Effect */
+
+  .svg-waves {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    z-index: 1;
+    width: 100%;
+    height: 180px;
+  }
+
+  @media (max-width: 767px) {
+    .svg-waves {
+      height: 80px;
+    }
+  }
+
+  .svg-waves__parallax > use {
+    -webkit-animation: move-forever 25s cubic-bezier(0.55, 0.5, 0.45, 0.5)
+      infinite;
+    animation: move-forever 25s cubic-bezier(0.55, 0.5, 0.45, 0.5) infinite;
+  }
+
+  .svg-waves__parallax > use:nth-child(1) {
+    -webkit-animation-delay: -2s;
+    animation-delay: -2s;
+    -webkit-animation-duration: 7s;
+    animation-duration: 7s;
+    fill: #fbdbe3bd;
+  }
+
+  .svg-waves__parallax > use:nth-child(2) {
+    -webkit-animation-delay: -3s;
+    animation-delay: -3s;
+    -webkit-animation-duration: 10s;
+    animation-duration: 10s;
+    fill: #fbdbe38e;
+  }
+
+  .svg-waves__parallax > use:nth-child(3) {
+    -webkit-animation-delay: -4s;
+    animation-delay: -4s;
+    -webkit-animation-duration: 13s;
+    animation-duration: 13s;
+    fill: #d2a6a66c;
+  }
+
+  .svg-waves__parallax > use:nth-child(4) {
+    -webkit-animation-delay: -5s;
+    animation-delay: -5s;
+    -webkit-animation-duration: 20s;
+    animation-duration: 20s;
+    fill: #d2a6a6;
+  }
+
+  @-webkit-keyframes move-forever {
+    0% {
+      transform: translate3d(-90px, 0, 0);
+    }
+    100% {
+      transform: translate3d(85px, 0, 0);
+    }
+  }
+
+  @keyframes move-forever {
+    0% {
+      transform: translate3d(-90px, 0, 0);
+    }
+    100% {
+      transform: translate3d(85px, 0, 0);
     }
   }
 `;
