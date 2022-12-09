@@ -346,7 +346,11 @@ function App() {
 
     //Enter
     if (e.keyCode === 13 && selectedSuggestion > -1 && !render) {
-      window.open(`${suggestions[selectedSuggestion]?.url}`, "__blank");
+      let domain = suggestions[selectedSuggestion]?.url.replace(
+        "bing.com",
+        "google.com"
+      );
+      window.open(`${domain}`, "__blank");
     }
 
     //user hits any character apart from arrow keys when in hyperbeam
@@ -391,6 +395,26 @@ function App() {
         <div className="logo">
           <img src="/logo.png" alt="Sirch" />
         </div>
+        <div className="menu">
+          <a href="#" target="_blank">
+            Get Sirch for Chrome
+          </a>
+          <a href="#" target="_blank">
+            The death of Google
+          </a>
+          <a href="#" target="_blank">
+            Twitter fun
+          </a>
+          <a href="#" target="_blank">
+            Linkedin
+          </a>
+          <a href="#" target="_blank">
+            Sirch Cash & Ads
+          </a>
+          <a href="#" target="_blank">
+            Talk to us
+          </a>
+        </div>
         {/* <label className="switch">
 					<input type="checkbox" />
 					<span className="slider round" onClick={switchTheme}></span>
@@ -419,14 +443,15 @@ function App() {
                     <img src={sites[cursor]?.logo} alt={sites[cursor]?.name} />
                   </div>
                 ) : (
-                  <BiSearch className="icon" />
+                  <></>
+                  // <BiSearch className="icon" />
                 )}
                 <input
                   type="text"
-                  placeholder="Search here...."
                   value={value}
                   onKeyDown={handleKeyPressed}
                   onChange={handleChange}
+                  autoFocus={true}
                 />
               </form>
               {visibleSites ? (
@@ -609,6 +634,37 @@ const Container = styled.div`
 
     img {
       width: 60%;
+    }
+  }
+
+  .logo:hover + .menu {
+    display: flex;
+  }
+
+  .menu:hover {
+    display: flex;
+  }
+
+  .menu {
+    width: 300px;
+    height: auto;
+    display: none;
+    flex-direction: column;
+    align-items: flex-start;
+    position: fixed;
+    top: 50px;
+    left: 30px;
+    padding: 10px 0;
+
+    a {
+      line-height: 30px;
+      text-decoration: none;
+      font-size: 1.2em;
+      color: var(--white);
+    }
+
+    a:hover {
+      color: var(--red);
     }
   }
 
@@ -841,7 +897,7 @@ const Container = styled.div`
     animation-delay: -2s;
     -webkit-animation-duration: 7s;
     animation-duration: 7s;
-    fill: #fbdbe3bd;
+    fill: #f4f4f4;
   }
 
   .svg-waves__parallax > use:nth-child(2) {
@@ -849,7 +905,7 @@ const Container = styled.div`
     animation-delay: -3s;
     -webkit-animation-duration: 10s;
     animation-duration: 10s;
-    fill: #fbdbe38e;
+    fill: #ededed;
   }
 
   .svg-waves__parallax > use:nth-child(3) {
@@ -857,7 +913,7 @@ const Container = styled.div`
     animation-delay: -4s;
     -webkit-animation-duration: 13s;
     animation-duration: 13s;
-    fill: #d2a6a66c;
+    fill: #f2f2f2;
   }
 
   .svg-waves__parallax > use:nth-child(4) {
@@ -865,7 +921,7 @@ const Container = styled.div`
     animation-delay: -5s;
     -webkit-animation-duration: 20s;
     animation-duration: 20s;
-    fill: #d2a6a6;
+    fill: #ececec;
   }
 
   @-webkit-keyframes move-forever {
