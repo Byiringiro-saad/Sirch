@@ -1,38 +1,41 @@
 {
-	"name": "Sirch",
-	"version": "1.0.0",
-	"manifest_version": 3,
-	"description": "Your next-gen search engine",
-	"icons": {
-		"512": "logo.png"
-	},
-  "action":{},
-	"background": {
-		"service_worker": "background.js"
-	},
-	"content_scripts": [
-		{
-			"matches": ["<all_urls>"],
-			"js": ["content_script.js"]
-		}
-	],
-	"permissions": ["activeTab", "scripting", "tabs"],
-	"commands": {
-		"open-popup": {
-			"suggested_key": {
-				"default": "Ctrl+K",
-				"windows": "Ctrl+K",
-				"mac": "Command+K"
-			},
-			"description": "Open a popup",
-			"global": true
-		},
-		"_execute_action": {
-			"suggested_key": {
-				"default": "Ctrl+K",
-				"mac": "Command+K"
-			},
-			"description": "Open a popup"
-		}
-	}
+  "name": "Sirch",
+  "version": "1.0.0",
+  "manifest_version": 3,
+  "description": "Your next-gen search engine",
+  "icons": {
+    "512": "logo.png"
+  },
+  "action": {},
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content_script.js"]
+    }
+  ],
+  "content_security_policy": {
+    "extension_page": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self';script-src-elem 'self' 'blob:'"
+  },
+  "permissions": ["activeTab", "scripting", "tabs"],
+  "commands": {
+    "open-popup": {
+      "suggested_key": {
+        "default": "Ctrl+K",
+        "windows": "Ctrl+K",
+        "mac": "Command+K"
+      },
+      "description": "Open a popup",
+      "global": true
+    },
+    "_execute_action": {
+      "suggested_key": {
+        "default": "Ctrl+K",
+        "mac": "Command+K"
+      },
+      "description": "Open a popup"
+    }
+  }
 }

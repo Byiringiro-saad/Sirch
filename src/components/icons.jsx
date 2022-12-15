@@ -1,13 +1,17 @@
+/* eslint-disable no-shadow */
+/* eslint-disable jsx-a11y/no-static-element-interactions */
+/* eslint-disable jsx-a11y/click-events-have-key-events */
+/* eslint-disable no-use-before-define */
+/* eslint-disable no-unused-expressions */
+/* eslint-disable no-unsafe-optional-chaining */
+/* eslint-disable react/prop-types */
+
 import React, { useState } from "react";
 import styled from "styled-components";
-// eslint-disable-next-line no-unused-vars
 import { openNewTab } from "../action/bingAction";
-import {
-  getSingleDomainByDomainName,
-  addDomain,
-} from "../action/supabaseAction";
+import { addDomain } from "../action/supabaseAction";
 
-const Icons = ({
+function Icons({
   sites,
   tabs,
   data,
@@ -15,10 +19,9 @@ const Icons = ({
   cursor,
   setCursor,
   underDomain,
-  visibleSites,
-  render,
   updateSupabaseDomainCount,
-}) => {
+  visibleSites,
+}) {
   const [currentNav, setCurrentNav] = useState(1);
   const [tabsPerNav] = useState(4);
   const [currentTab, setCurrentTab] = useState(0);
@@ -52,10 +55,7 @@ const Icons = ({
         nextNav();
         setCurrentTab(cursor + 1 + tabsPerNav * (currentNav - 1));
       }
-    } else if (
-      e.keyCode === 39 &&
-      (currentTab === tabs.length - 1 || currentTab === sites.length - 1)
-    ) {
+    } else if (e.keyCode === 39 && (currentTab === tabs.length - 1 || currentTab === sites.length - 1)) {
       setCursor(cursor);
       setCurrentTab(cursor + tabsPerNav * (currentNav - 1));
     } else if (cursor === 0 && e.keyCode === 37) {
@@ -65,25 +65,24 @@ const Icons = ({
         setCursor(3);
         prevNav();
       }
-    } else {
-      if (e.keyCode === 37 && cursor > 0) {
-        setCursor(cursor - 1);
-        setCurrentTab(cursor - 1 + tabsPerNav * (currentNav - 1));
-      } else if (e.keyCode === 39 && cursor < tabs.length - 1) {
-        setCursor(cursor + 1);
-        setCurrentTab(cursor + 1 + tabsPerNav * (currentNav - 1));
-      } else if (e.keyCode === 39 && cursor < sites.length - 1) {
-        setCursor(cursor + 1);
-        setCurrentTab(cursor + 1 + tabsPerNav * (currentNav - 1));
-      } else if (e.keyCode === 38 && sites[cursor].domain) {
-        // save domain counter in supabase when arrow up key pressed
-        console.log({ cursor, domain: sites[cursor].domain });
-        const { data, error } = await addDomain(sites[cursor].domain);
-        if (data && cursor > -1 && !underDomain) {
-          //sites[cursor].count = data.count;
-          updateSupabaseDomainCount(sites);
-        }
-        console.log({ data, error });
+    } else if (e.keyCode === 37 && cursor > 0) {
+      setCursor(cursor - 1);
+      setCurrentTab(cursor - 1 + tabsPerNav * (currentNav - 1));
+    } else if (e.keyCode === 39 && cursor < tabs.length - 1) {
+      setCursor(cursor + 1);
+      setCurrentTab(cursor + 1 + tabsPerNav * (currentNav - 1));
+    } else if (e.keyCode === 39 && cursor < sites.length - 1) {
+      setCursor(cursor + 1);
+      setCurrentTab(cursor + 1 + tabsPerNav * (currentNav - 1));
+    } else if (e.keyCode === 38 && sites[cursor]?.domain) {
+      // save domain counter in supabase when arrow up key pressed
+      const { data, error } = await addDomain(sites[cursor].domain);
+      if (data && cursor > -1 && !underDomain) {
+        // sites[cursor].count = data.count;
+        updateSupabaseDomainCount(sites);
+      }
+      if (error) {
+        console.error(error);
       }
     }
   };
@@ -92,14 +91,10 @@ const Icons = ({
     if (sites.length === 0 && tabs.length === 0) {
       setCursor(-1);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sites, tabs]);
 
   React.useEffect(() => {
-    if (render) {
-      tabs.length > 0 && handleRender(tabs[currentTab].id);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    tabs.length > 0 && handleRender(tabs[currentTab].id);
   }, [cursor]);
 
   React.useEffect(() => {
@@ -155,19 +150,15 @@ const Icons = ({
         onClick={() => handleTab(id, index, domain)}
         key={index}
       >
-        <div className={count && count > 0 ? "num" : ""}>
-          {count && count > 0 ? count : ""}
-        </div>
-        <div className="gray">
-          {logo ? <img src={logo} alt={name} /> : <p>{name?.charAt(0)}</p>}
-        </div>
+        <div className={count && count > 0 ? "num" : ""}>{count && count > 0 ? count : ""}</div>
+        <div className="gray">{logo ? <img src={logo} alt={name} /> : <p>{name?.charAt(0)}</p>}</div>
         <div className="name">
           <p>{name}</p>
         </div>
       </div>
     );
   }
-};
+}
 
 const Container = styled.div`
   width: 650px;
@@ -178,8 +169,7 @@ const Container = styled.div`
   display: flex;
   flex-direction: row;
   align-items: center;
-  box-shadow: ${(props) =>
-    props.visible ? "var(--shadow) 0px 10px 50px" : "none"};
+  box-shadow: ${(props) => (props.visible ? "var(--shadow) 0px 10px 50px" : "none")};
 
   .selected {
     .gray {

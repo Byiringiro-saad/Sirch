@@ -1,3 +1,6 @@
+/* eslint-disable consistent-return */
+/* eslint-disable no-return-await */
+
 import { createClient } from "@supabase/supabase-js";
 
 const supabaseUrl = "https://uzupevopaqowfsfifequ.supabase.co";
@@ -6,25 +9,13 @@ const supabaseClient = createClient(supabaseUrl, supabaseKey);
 
 export default supabaseClient;
 
-export const getSavedDomains = async () => {
-  return await supabaseClient.from("sirch-domain").select();
-};
+export const getSavedDomains = async () => await supabaseClient.from("sirch-domain").select();
 
-export const getSingleDomainByDomainName = async (domain) => {
-  return await supabaseClient
-    .from("sirch-domain")
-    .select()
-    .eq("domain_name", domain)
-    .single();
-};
+export const getSingleDomainByDomainName = async (domain) =>
+  await supabaseClient.from("sirch-domain").select().eq("domain_name", domain).single();
 
-export const getSingleDomainByDomainId = async (id) => {
-  return await supabaseClient
-    .from("sirch-domain")
-    .select()
-    .eq("id", id)
-    .single();
-};
+export const getSingleDomainByDomainId = async (id) =>
+  await supabaseClient.from("sirch-domain").select().eq("id", id).single();
 
 export const addDomain = async (domain) => {
   const { data, error } = await getSingleDomainByDomainName(domain);
@@ -39,7 +30,7 @@ export const addDomain = async (domain) => {
 
   if (data) {
     // record exists then update
-    //return await updateDomain(data.domain_name, data.count);
+    // return await updateDomain(data.domain_name, data.count);
     return await supabaseClient
       .from("sirch-domain")
       .update([{ domain_name: data.domain_name, count: data.count + 1 }])
@@ -48,9 +39,8 @@ export const addDomain = async (domain) => {
   }
 };
 
-export const updateDomain = async (data) => {
-  return await supabaseClient
+export const updateDomain = async (data) =>
+  await supabaseClient
     .from("sirch-domain")
     .update([{ domain_name: data.domain_name, count: data.count + 1 }])
     .eq("id", data.id);
-};

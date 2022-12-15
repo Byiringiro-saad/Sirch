@@ -3,13 +3,13 @@ import styled from "styled-components";
 
 import { BsArrowUp } from "react-icons/bs";
 
-const Three = () => {
+function Three() {
   return (
     <Container>
       Press the <BsArrowUp className="icon" /> to upvote
     </Container>
   );
-};
+}
 
 const Container = styled.p`
   color: var(--white);

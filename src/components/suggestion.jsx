@@ -1,8 +1,11 @@
+/* eslint-disable jsx-a11y/no-static-element-interactions */
+/* eslint-disable react/prop-types */
+/* eslint-disable jsx-a11y/click-events-have-key-events */
+
 import React from "react";
 import styled from "styled-components";
 
-const Suggestion = ({ suggestion, selected, handleRenderPage }) => {
-
+function Suggestion({ suggestion, selected, handleRenderPage }) {
   return (
     <Container selected={selected}>
       <div className="left" onClick={() => handleRenderPage(suggestion.query)}>
@@ -14,7 +17,7 @@ const Suggestion = ({ suggestion, selected, handleRenderPage }) => {
       </div>
     </Container>
   );
-};
+}
 
 const Container = styled.div`
   width: 100%;

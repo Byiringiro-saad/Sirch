@@ -1,33 +1,39 @@
+/* eslint-disable jsx-a11y/no-autofocus */
+/* eslint-disable jsx-a11y/anchor-is-valid */
+/* eslint-disable react/no-array-index-key */
+/* eslint-disable react/jsx-no-useless-fragment */
+/* eslint-disable no-use-before-define */
+/* eslint-disable no-shadow */
+/* eslint-disable no-unused-expressions */
 /* eslint-disable no-unused-vars */
+
 import axios from "axios";
-import React from "react";
+import React, { useMemo } from "react";
 import styled from "styled-components";
 import useLocalStorage from "use-local-storage";
+import { debounce } from "lodash";
 
-//icons
+// icons
 import { BiSearch } from "react-icons/bi";
 import { CopyIcon, CopiedIcon } from "./icons/icons";
 
-//components
+// components
 import Icons from "./components/icons";
 import Command from "./components/command";
 import Suggestion from "./components/suggestion";
 import Instruction from "./components/instruction";
 import { bingAutoSuggest, getBingSearch } from "./action/bingAction";
-import { loadHyperBeam, renderPage, updateTab } from "./action/hyperBeam";
+import { checkSession, getEmbeddedUrl, loadHyperBeam, renderPage, updateTab } from "./action/hyperBeam";
 import { getSavedDomains } from "./action/supabaseAction";
 import Page from "./components/page";
+import ShortAnswer from "./components/shortAnswer";
 
 function App() {
-  //theme data
+  // theme data
   const defaultDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-  const [theme, setTheme] = useLocalStorage(
-    "theme",
-    defaultDark ? "dark" : "light"
-  );
+  const [theme, setTheme] = useLocalStorage("theme", defaultDark ? "dark" : "light");
 
-  //local data
-  const container = document.getElementById("container");
+  // local data
   const [tabs, setTabs] = React.useState([]);
   const [windowId, setWindowId] = React.useState(null);
   const [data, setData] = React.useState([]);
@@ -55,7 +61,7 @@ function App() {
   const [showSearch, setShowSearch] = React.useState(false);
   const [showInstructions, setShowInstructions] = React.useState(false);
 
-  //instructions
+  // instructions
   const [one, setOne] = React.useState("");
   const [two, setTwo] = React.useState("");
   const [three, setThree] = React.useState("");
@@ -63,6 +69,8 @@ function App() {
   const [five, setFive] = React.useState("");
   const [six, setSix] = React.useState("");
   const [seven, setSeven] = React.useState("");
+
+  // hyperbeam
   const [hb, setHb] = React.useState(null);
 
   // supabase related state
@@ -74,13 +82,12 @@ function App() {
     if (error) {
       setFetchError("Could not fetch the domains");
       setDomains(null);
-      console.log(error);
+      console.error(error);
     }
 
     if (data) {
       setDomains(data);
       setFetchError(null);
-      console.log({ domains: data });
     }
   };
 
@@ -88,8 +95,8 @@ function App() {
     const { data, error } = await getSavedDomains();
     if (error) {
       // setFetchError("Could not fetch the domains");
-      //setDomains(null);
-      //console.log(error);
+      // setDomains(null);
+      // console.log(error);
     }
     // all domains count
     if (data) {
@@ -131,7 +138,7 @@ function App() {
   }
 
   const underDomainSearch = (key) => {
-    //not yet implemented, store data in underDomainData
+    // not yet implemented, store data in underDomainData
   };
 
   const handleChange = async (e) => {
@@ -139,6 +146,8 @@ function App() {
 
     if (!underDomain) {
       if (e.target.value.length === 0) {
+        setSites((site) => []);
+        setTabs((tab) => []);
         setVisibleSites(false);
         setOne("Type any character to begin");
         setFour("");
@@ -175,8 +184,13 @@ function App() {
         setCursor(0);
       }
 
+      if (!hasWhiteSpace(value)) {
+        setCursor(0);
+        setSuggestionsActive(false);
+      }
+
       if (hasWhiteSpace(e.target.value)) {
-        //changing the instructions
+        // changing the instructions
         setTwo("Go");
         setThree("");
         setFour("enter");
@@ -186,43 +200,33 @@ function App() {
         setSeven("Suggestions & stashed pages");
         setUnderDomain(false);
 
-        //removing the current icons
+        // removing the current icons
         setSites([]);
 
-        //getting suggestions from bing api
+        // getting suggestions from bing api
         const sug = await bingAutoSuggest(e.target.value);
         setSuggestions(sug);
-        await handleRenderPage(e.target.value);
+        debounceFn(e.target.value, hb);
       } else {
-        companySuggest(e);
+        companySuggest(value);
       }
     } else {
-      //todo
-      const filterd = underDomainData.filter((d) =>
-        d.toLowerCase().includes(e.target.value.toLowerCase())
-      );
+      // todo
+      const filterd = underDomainData.filter((d) => d.toLowerCase().includes(e.target.value.toLowerCase()));
 
       setUnderDomainFilterd(filterd);
     }
   };
 
   React.useEffect(() => {
-    if (
-      !hasWhiteSpace(value) &&
-      suggestionsActive &&
-      selectedSuggestion === -1
-    ) {
+    if (!hasWhiteSpace(value) && suggestionsActive && selectedSuggestion === -1) {
       setSpaceClicked(false);
       setCursor(0);
       setSuggestionsActive(false);
       setSelectedSuggestion(-1);
     }
 
-    if (
-      hasWhiteSpace(value) &&
-      !suggestionsActive &&
-      selectedSuggestion === -1
-    ) {
+    if (hasWhiteSpace(value) && !suggestionsActive && selectedSuggestion === -1) {
       setSpaceClicked(true);
       setCursor(-1);
       setSuggestionsActive(true);
@@ -251,27 +255,54 @@ function App() {
     // fetchDomain
     fetchDomains();
 
-    loadHyperBeam(container)
-      .then((hyperbeam) => {
-        setHb(hyperbeam);
-      })
-      .catch((err) => {
-        console.error(err);
+    // check if hb session is saved in local storage
+    const container = document.getElementById("container");
+    const hbSession = localStorage.getItem("hbSession");
+    if (hbSession) {
+      const { sessionId } = JSON.parse(hbSession);
+      checkSession(sessionId).then((session) => {
+        if (session.termination_date) {
+          // create new session
+          getEmbeddedUrl().then((newSession) => {
+            loadHyperBeam(container, newSession.embdedUrl)
+              .then((hyperbeam) => {
+                setHb(hyperbeam);
+              })
+              .catch((err) => {
+                console.error(err);
+              });
+          });
+        } else {
+          // load previous session
+          const { embdedUrl } = JSON.parse(hbSession);
+          loadHyperBeam(container, embdedUrl)
+            .then((hyperbeam) => {
+              setHb(hyperbeam);
+            })
+            .catch((err) => {
+              console.error(err);
+            });
+        }
       });
-
+    } else {
+      // create new session
+      getEmbeddedUrl().then((newSession) => {
+        loadHyperBeam(container, newSession.embed_url)
+          .then((hyperbeam) => {
+            setHb(hyperbeam);
+          })
+          .catch((err) => {
+            console.error(err);
+          });
+      });
+    }
     return () => {
       hb && hb.destroy();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleKeyPressed = (e) => {
-    if (
-      e.keyCode === 37 ||
-      e.keyCode === 39 ||
-      e.keyCode === 38 ||
-      e.keyCode === 40
-    ) {
+    if (e.keyCode === 37 || e.keyCode === 39 || e.keyCode === 38 || e.keyCode === 40) {
       e.preventDefault();
     }
   };
@@ -279,88 +310,88 @@ function App() {
   const handleRenderPage = async (value) => {
     const data = await getBingSearch(value);
     setData(data);
-    const tabs = await renderPage(hb, data, windowId);
-    setTabs(tabs);
-    setWindowId(tabs[0].windowId);
+    let tabs;
+    if (hb) {
+      tabs = await renderPage(hb, data, windowId);
+      if (tabs.length) {
+        setTabs(tabs);
+        if (windowId !== tabs[0].windowId) {
+          setWindowId(tabs[0].windowId);
+        }
+      }
+    }
   };
+  const debounceFn = useMemo(() => debounce(handleRenderPage, 1000), [hb]);
 
   const handleKeyDown = (e) => {
-    //Down
-    if (
-      e.keyCode === 40 &&
-      suggestionsActive &&
-      selectedSuggestion < suggestions.length - 1
-    ) {
+    // For suggestions
+    // Down
+    if (e.keyCode === 40 && suggestionsActive && selectedSuggestion === -1) {
       setBackupValue(value);
       setValue(suggestions[selectedSuggestion + 1]?.displayText);
       setSelectedSuggestion(selectedSuggestion + 1);
     }
 
-    //Down
-    if (e.keyCode === 40 && !suggestionsActive && selectedPage === -1) {
-      setBackupValue(value);
-      setValue("");
-      setUnderDomain(true);
-      setSelectedPage(0);
+    // Down
+    if (e.keyCode === 40 && suggestionsActive && selectedSuggestion >= 0 && selectedSuggestion < 4) {
+      setValue(suggestions[selectedSuggestion + 1]?.displayText);
+      setSelectedSuggestion(selectedSuggestion + 1);
     }
 
-    //Down
-    if (
-      e.keyCode === 40 &&
-      underDomain &&
-      selectedPage < underDomainData.length - 1
-    ) {
-      setSelectedPage(selectedPage + 1);
-    }
-
-    //Up
-    if (e.keyCode === 38 && underDomain && selectedPage > 0) {
-      setSelectedPage(selectedPage - 1);
-    }
-
-    //Up
-    if (e.keyCode === 38 && !suggestionsActive && selectedPage === 0) {
-      setValue(backupValue);
-      setBackupValue("");
-      setUnderDomain(false);
-      setSelectedPage(-1);
-    }
-
-    //Up
+    // Up
     if (e.keyCode === 38 && suggestionsActive && selectedSuggestion > 0) {
-      setBackupValue(value);
       setValue(suggestions[selectedSuggestion - 1]?.displayText);
       setSelectedSuggestion(selectedSuggestion - 1);
     }
 
-    //Up
+    // Up
     if (e.keyCode === 38 && suggestionsActive && selectedSuggestion === 0) {
       setValue(backupValue);
       setBackupValue("");
+      setSelectedSuggestion(-1);
     }
 
-    //Enter
-    if (e.keyCode === 13 && cursor > -1 && !render) {
-      window.open(`https://${sites[cursor]?.domain}`, "__blank");
-    }
-
-    //Enter
+    // Enter
     if (e.keyCode === 13 && selectedSuggestion > -1 && !render) {
-      let domain = suggestions[selectedSuggestion]?.url.replace(
-        "bing.com",
-        "google.com"
-      );
+      const domain = suggestions[selectedSuggestion]?.url.replace("bing.com", "google.com");
       window.open(`${domain}`, "__blank");
     }
 
-    //user hits any character apart from arrow keys when in hyperbeam
-    if (
-      render &&
-      (e.keyCode !== 40 ||
-        e.keyCode !== 38 ||
-        e.keyCode !== 37 ||
-        e.keyCode !== 39)
-    ) {
+    // For pages
+    // Down
+    if (e.keyCode === 40 && !underDomain && selectedPage === -1 && !suggestionsActive) {
+      setBackupValue(value);
+      setValue("");
+      setSelectedPage(0);
+      setUnderDomain(true);
+    }
+
+    // Down
+    if (e.keyCode === 40 && underDomain && selectedPage >= 0) {
+      setSelectedPage(selectedPage + 1);
+    }
+
+    // Up
+    if (e.keyCode === 38 && underDomain && selectedPage >= 0) {
+      setSelectedPage(selectedPage - 1);
+    }
+
+    // Up
+    if (e.keyCode === 38 && underDomain && selectedPage === 0) {
+      setValue(backupValue);
+      setBackupValue("");
+      setSelectedPage(-1);
+      setUnderDomain(false);
+    }
+
+    // Enter
+    if (e.keyCode === 13 && cursor > -1 && !render) {
+      console.log("here");
+      window.open(`https://${sites[cursor]?.domain}`, "__blank");
+    }
+
+    // user hits any character apart from arrow keys when in hyperbeam
+    if (render && (e.keyCode !== 40 || e.keyCode !== 38 || e.keyCode !== 37 || e.keyCode !== 39)) {
       setRender(false);
     }
   };
@@ -431,6 +462,7 @@ function App() {
           }}
           visibleSites={visibleSites}
           underDomain={underDomain}
+          hb={hb}
           updateSupabaseDomainCount={handleSupabaseDomainCount}
         />
 
@@ -446,13 +478,7 @@ function App() {
                   <></>
                   // <BiSearch className="icon" />
                 )}
-                <input
-                  type="text"
-                  value={value}
-                  onKeyDown={handleKeyPressed}
-                  onChange={handleChange}
-                  autoFocus={true}
-                />
+                <input type="text" value={value} onKeyDown={handleKeyPressed} onChange={handleChange} autoFocus />
               </form>
               {visibleSites ? (
                 <>
@@ -465,22 +491,19 @@ function App() {
                         <div className="content">
                           {underDomainFilterd.length > 0
                             ? underDomainFilterd.map((site, index) => (
-                                <Page
-                                  page={site}
-                                  selected={selectedPage === index}
-                                />
+                                <Page page={site} selected={selectedPage === index} />
                               ))
                             : underDomainData.map((page, index) => (
-                                <Page
-                                  page={page}
-                                  selected={selectedPage === index}
-                                />
+                                <Page page={page} selected={selectedPage === index} />
                               ))}
                         </div>
                       </div>
                     ) : (
                       <></>
                     )}
+                    <div>
+                      <ShortAnswer query={value} />
+                    </div>
                     {suggestionsActive && (
                       <div className="section">
                         <div className="title">
@@ -495,9 +518,7 @@ function App() {
                                   suggestion={suggestion}
                                   key={index}
                                   selected={selectedSuggestion === index}
-                                  handleRenderPage={(query) =>
-                                    handleRenderPage(query)
-                                  }
+                                  handleRenderPage={(query) => handleRenderPage(query)}
                                 />
                               ))
                           ) : (
@@ -561,13 +582,13 @@ function App() {
                     <path
                       id="gentle-wave"
                       d="M-160 44c30 0 58-18 88-18s 58 18 88 18 58-18 88-18 58 18 88 18 v44h-352z"
-                    ></path>
+                    />
                   </defs>
                   <g className="svg-waves__parallax">
-                    <use xlinkHref="#gentle-wave" x="48" y="0"></use>
-                    <use xlinkHref="#gentle-wave" x="48" y="3"></use>
-                    <use xlinkHref="#gentle-wave" x="48" y="5"></use>
-                    <use xlinkHref="#gentle-wave" x="48" y="7"></use>
+                    <use xlinkHref="#gentle-wave" x="48" y="0" />
+                    <use xlinkHref="#gentle-wave" x="48" y="3" />
+                    <use xlinkHref="#gentle-wave" x="48" y="5" />
+                    <use xlinkHref="#gentle-wave" x="48" y="7" />
                   </g>
                 </svg>
               </div>
@@ -578,33 +599,25 @@ function App() {
       <div
         title="render"
         id="container"
-        style={
-          !render
-            ? { height: "0vh", width: "0vw" }
-            : { height: "100%", width: "100%" }
-        }
+        style={!render ? { height: "0vh", width: "0vw" } : { height: "100%", width: "100%" }}
       />
     </>
   );
 
-  function companySuggest(e) {
+  function companySuggest(value) {
     axios
-      .get(
-        `https://autocomplete.clearbit.com/v1/companies/suggest?query=${e.target.value.toLowerCase()}`,
-        {}
-      )
+      .get(`https://autocomplete.clearbit.com/v1/companies/suggest?query=${value.toLowerCase()}`, {})
       .then((response) => {
         const sites = response.data;
         setSites(
           sites.map((site) => ({
             ...site,
-            count:
-              domains.find((d) => d.domain_name === site.domain)?.count || 0,
+            count: domains.find((d) => d.domain_name === site.domain)?.count || 0,
           }))
         );
       })
       .catch((error) => {
-        console.log(error);
+        console.error(error);
       });
   }
 }
@@ -748,8 +761,7 @@ const Container = styled.div`
     form {
       width: 98%;
       height: 50px;
-      border-bottom: ${(props) =>
-        props.instructions ? "1px solid var(--gray)" : "none"};
+      border-bottom: ${(props) => (props.instructions ? "1px solid var(--gray)" : "none")};
       display: flex;
       align-items: center;
       justify-content: center;
@@ -887,8 +899,7 @@ const Container = styled.div`
   }
 
   .svg-waves__parallax > use {
-    -webkit-animation: move-forever 25s cubic-bezier(0.55, 0.5, 0.45, 0.5)
-      infinite;
+    -webkit-animation: move-forever 25s cubic-bezier(0.55, 0.5, 0.45, 0.5) infinite;
     animation: move-forever 25s cubic-bezier(0.55, 0.5, 0.45, 0.5) infinite;
   }
 

@@ -40,3 +40,8 @@ body {
 	height: 100vh; */
   /* overflow: auto;*/
 }
+
+.short_ans {
+  padding-left: 10px;
+  padding-bottom: 10px;
+}

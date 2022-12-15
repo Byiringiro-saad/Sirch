@@ -1,7 +1,9 @@
+/* eslint-disable react/prop-types */
+
 import React from "react";
 import styled from "styled-components";
 
-const Command = ({ command }) => {
+function Command({ command }) {
   return (
     <Container>
       <div className="left">
@@ -15,7 +17,7 @@ const Command = ({ command }) => {
       </div>
     </Container>
   );
-};
+}
 
 const Container = styled.div`
   width: 100%;

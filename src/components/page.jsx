@@ -1,7 +1,8 @@
 import React from "react";
 import styled from "styled-components";
 
-const Page = ({ page, selected }) => {
+// eslint-disable-next-line react/prop-types
+function Page({ page, selected }) {
   return (
     <Container selected={selected}>
       <div className="left">
@@ -13,7 +14,7 @@ const Page = ({ page, selected }) => {
       </div>
     </Container>
   );
-};
+}
 
 const Container = styled.div`
   width: 100%;

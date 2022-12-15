@@ -1,15 +1,18 @@
+/* eslint-disable react/jsx-no-useless-fragment */
+/* eslint-disable react/prop-types */
+
 import React from "react";
 import styled from "styled-components";
 
 import { AiOutlineEnter } from "react-icons/ai";
 import { BsArrowDown, BsArrowUp, BsArrowRight } from "react-icons/bs";
 
-//instructions
+// instructions
 import One from "./instructions/one";
 import Two from "./instructions/two";
 import Three from "./instructions/three";
 
-const Instruction = ({ one, two, three, four, render, five, six, seven }) => {
+function Instruction({ one, two, three, four, render, five, six, seven }) {
   return (
     <Container render={render}>
       <div className="instructions">
@@ -28,13 +31,7 @@ const Instruction = ({ one, two, three, four, render, five, six, seven }) => {
               {four === "up" ? (
                 <BsArrowUp className="icon" />
               ) : (
-                <>
-                  {four === "enter" ? (
-                    <AiOutlineEnter className="icon" />
-                  ) : (
-                    <></>
-                  )}
-                </>
+                <>{four === "enter" ? <AiOutlineEnter className="icon" /> : <></>}</>
               )}
             </>
           )}
@@ -58,7 +55,7 @@ const Instruction = ({ one, two, three, four, render, five, six, seven }) => {
       </div>
     </Container>
   );
-};
+}
 
 const Container = styled.div`
   width: ${(props) => (props.render ? "650px" : "98%")};

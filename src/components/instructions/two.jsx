@@ -3,13 +3,13 @@ import styled from "styled-components";
 
 import { BsArrowRight } from "react-icons/bs";
 
-const Two = () => {
+function Two() {
   return (
     <Container>
       Press <BsArrowRight className="icon" /> to view search results
     </Container>
   );
-};
+}
 
 const Container = styled.div`
   color: var(--white);

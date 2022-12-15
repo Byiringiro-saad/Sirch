@@ -1,4 +1,6 @@
+/* eslint-disable no-use-before-define */
 /* eslint-disable no-undef */
+
 // chrome.commands.onCommand.addListener((command) => {
 // 	console.log(command);
 // 	if (command === "open-popup") {
@@ -28,14 +30,14 @@
 // };
 
 chrome.action.onClicked.addListener((tab) => {
-	chrome.scripting.executeScript({
-		target: { tabId: tab.id },
-		func: contentScriptFunc(tab.id)
-	});
+  chrome.scripting.executeScript({
+    target: { tabId: tab.id },
+    func: contentScriptFunc(tab.id),
+  });
 });
 
 function contentScriptFunc(id) {
-	chrome.tabs.update(id, {
-		url: chrome.runtime.getURL("index.html"),
-	});
+  chrome.tabs.update(id, {
+    url: chrome.runtime.getURL("index.html"),
+  });
 }

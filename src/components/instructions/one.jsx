@@ -3,13 +3,13 @@ import styled from "styled-components";
 
 import { BiSpaceBar } from "react-icons/bi";
 
-const One = () => {
+function One() {
   return (
     <Container>
       Type word(s) & hit <BiSpaceBar className="icon" /> to Sirch
     </Container>
   );
-};
+}
 
 const Container = styled.p`
   color: var(--white);

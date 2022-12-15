@@ -1,9 +1,11 @@
+/* eslint-disable no-return-await */
+/* eslint-disable consistent-return */
+
 import Hyperbeam from "@hyperbeam/web";
 import axios from "axios";
 
 export const renderPage = async (hb, data, windowId) => {
   try {
-    console.log("intializing tab");
     if (windowId) {
       const query = await hb.tabs.query({ windowId });
       query.map(async (tab) => {
@@ -11,16 +13,17 @@ export const renderPage = async (hb, data, windowId) => {
       });
     }
 
-    const tabs = await data.map(async (item, index) => {
-      return await hb.tabs.create({
-        index: index,
-        url: item.url || item.domain,
-        active: false,
-      });
-    });
+    const tabs = await data.map(
+      async (item, index) =>
+        await hb.tabs.create({
+          index,
+          url: item.url || item.domain,
+          active: false,
+        })
+    );
     return Promise.all(tabs);
   } catch (err) {
-    console.log(err);
+    console.error(err);
   }
 };
 
@@ -28,15 +31,30 @@ export const updateTab = async (hb, id) => {
   await hb.tabs.update(id, { active: true });
 };
 
-export async function loadHyperBeam(container) {
+export async function loadHyperBeam(container, embedUrl) {
   try {
-    const res = await axios.get("https://sirch-api-rajesh-vishwa.vercel.app");
-    console.log(res.data);
-    return await Hyperbeam(container, res.data.embed_url, {
-      adminToken: res.data.admin_token,
-    });
+    return await Hyperbeam(container, embedUrl);
   } catch (error) {
-    console.log(error);
-    console.log(error.response);
+    console.error(error);
+    console.error(error.response);
   }
 }
+
+export const getEmbeddedUrl = async () => {
+  try {
+    const res = await axios.get(`${process.env.REACT_APP_SIRCH_INTEGRATIONS_URL}/hb/create`);
+    window.localStorage.setItem("hb_session", JSON.stringify(res.data));
+    return res.data;
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+export const checkSession = async (id) => {
+  try {
+    const res = await axios.get(`${process.env.REACT_APP_SIRCH_INTEGRATIONS_URL}/hb/session/${id}`);
+    return res.data;
+  } catch (error) {
+    console.error(error.response);
+  }
+};
