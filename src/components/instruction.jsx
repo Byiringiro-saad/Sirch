@@ -66,10 +66,11 @@ const Container = styled.div`
   padding: 0 15px;
   border-radius: ${(props) => (props.render ? "10px 10px 0 0" : "")};
   justify-content: space-between;
-  border-top: ${(props) => (props.render ? "" : "1px solid var(--gray)")};
   border: ${(props) => (props.render ? "1px solid var(--gray)" : "")};
   position: ${(props) => (props.render ? "fixed" : "relative")};
+  box-shadow: ${(props) => (props.render ? "var(--shadow) 0px 10px 50px" : "none")};
   bottom: 0;
+  background: var(--black);
 
   p {
     /* text-transform: capitalize; */

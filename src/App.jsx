@@ -146,10 +146,11 @@ function App() {
 
     if (!underDomain) {
       if (e.target.value.length === 0) {
-        setSites((site) => []);
-        setTabs((tab) => []);
         setVisibleSites(false);
-        setOne("Type any character to begin");
+        setShowInstructions(false);
+        setSites([]);
+        setTabs([]);
+        setOne("");
         setFour("");
         setTwo("");
         setFive("");
@@ -160,6 +161,7 @@ function App() {
 
       if (e.target.value.length > 0) {
         setVisibleSites(true);
+        setShowInstructions(true);
         setOne("one");
         setFour("enter");
         setTwo("Go");
@@ -213,7 +215,6 @@ function App() {
     } else {
       // todo
       const filterd = underDomainData.filter((d) => d.toLowerCase().includes(e.target.value.toLowerCase()));
-
       setUnderDomainFilterd(filterd);
     }
   };

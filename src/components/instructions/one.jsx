@@ -6,7 +6,7 @@ import { BiSpaceBar } from "react-icons/bi";
 function One() {
   return (
     <Container>
-      Type word(s) & hit <BiSpaceBar className="icon" /> to Sirch
+      Hit <BiSpaceBar className="icon" /> to search the web
     </Container>
   );
 }
