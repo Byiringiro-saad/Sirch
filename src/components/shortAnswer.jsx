@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 
 function ShortAnswer({ query }) {
-  const debounceTimeMs = 500;
+  const debounceTimeMs = 1000;
 
   const [queryResult, setQueryResult] = useState("");
 
@@ -14,7 +14,7 @@ function ShortAnswer({ query }) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: "Bearer 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",
+        Authorization: "Bearer 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",
       },
       body: JSON.stringify({
         model: "text-davinci-002",
