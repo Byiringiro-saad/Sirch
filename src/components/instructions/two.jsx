@@ -1,12 +1,27 @@
 import React from "react";
 import styled from "styled-components";
+import { motion } from "framer-motion";
 
 import { BsArrowRight } from "react-icons/bs";
 
 function Two() {
+  const constraints = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1 },
+  };
+
   return (
     <Container>
-      Press <BsArrowRight className="icon" /> to view search results
+      Press
+      <motion.span
+        variants={constraints}
+        initial="hidden"
+        animate="visible"
+        transition={{ repeat: "Infinity", duration: 1, ease: "circOut" }}
+      >
+        <BsArrowRight className="icon" />
+      </motion.span>
+      to view search results
     </Container>
   );
 }

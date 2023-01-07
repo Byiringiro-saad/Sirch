@@ -5,26 +5,22 @@ import Hyperbeam from "@hyperbeam/web";
 import axios from "axios";
 
 export const renderPage = async (hb, data, windowId) => {
-  try {
-    if (windowId) {
-      const query = await hb.tabs.query({ windowId });
-      query.map(async (tab) => {
-        await hb.tabs.remove(tab.id);
-      });
-    }
-
-    const tabs = await data.map(
-      async (item, index) =>
-        await hb.tabs.create({
-          index,
-          url: item.url || item.domain,
-          active: false,
-        })
-    );
-    return Promise.all(tabs);
-  } catch (err) {
-    console.error(err);
+  if (windowId) {
+    const query = await hb.tabs.query({ windowId });
+    query.map(async (tab) => {
+      await hb.tabs.remove(tab.id);
+    });
   }
+
+  const tabs = await data.map(
+    async (item, index) =>
+      await hb.tabs.create({
+        index,
+        url: item.url || item.domain,
+        active: false,
+      })
+  );
+  return Promise.all(tabs);
 };
 
 export const updateTab = async (hb, id) => {
@@ -32,29 +28,16 @@ export const updateTab = async (hb, id) => {
 };
 
 export async function loadHyperBeam(container, embedUrl) {
-  try {
-    return await Hyperbeam(container, embedUrl);
-  } catch (error) {
-    console.error(error);
-    console.error(error.response);
-  }
+  return await Hyperbeam(container, embedUrl);
 }
 
 export const getEmbeddedUrl = async () => {
-  try {
-    const res = await axios.get(`${process.env.REACT_APP_SIRCH_INTEGRATIONS_URL}/hb/create`);
-    window.localStorage.setItem("hb_session", JSON.stringify(res.data));
-    return res.data;
-  } catch (error) {
-    console.error(error);
-  }
+  const res = await axios.get(`${process.env.REACT_APP_SIRCH_INTEGRATIONS_URL}/hb/create`);
+  window.localStorage.setItem("hb_session", JSON.stringify(res.data));
+  return res.data;
 };
 
 export const checkSession = async (id) => {
-  try {
-    const res = await axios.get(`${process.env.REACT_APP_SIRCH_INTEGRATIONS_URL}/hb/session/${id}`);
-    return res.data;
-  } catch (error) {
-    console.error(error.response);
-  }
+  const res = await axios.get(`${process.env.REACT_APP_SIRCH_INTEGRATIONS_URL}/hb/session/${id}`);
+  return res.data;
 };

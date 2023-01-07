@@ -82,7 +82,7 @@ function App() {
     if (error) {
       setFetchError("Could not fetch the domains");
       setDomains(null);
-      console.error(error);
+      throw error;
     }
 
     if (data) {
@@ -270,7 +270,7 @@ function App() {
                 setHb(hyperbeam);
               })
               .catch((err) => {
-                console.error(err);
+                throw err;
               });
           });
         } else {
@@ -281,7 +281,7 @@ function App() {
               setHb(hyperbeam);
             })
             .catch((err) => {
-              console.error(err);
+              throw err;
             });
         }
       });
@@ -293,7 +293,7 @@ function App() {
             setHb(hyperbeam);
           })
           .catch((err) => {
-            console.error(err);
+            throw err;
           });
       });
     }
@@ -358,6 +358,13 @@ function App() {
       window.open(`${domain}`, "__blank");
     }
 
+    // Enter
+    if (e.keyCode === 13 && selectedSuggestion === -1 && !render) {
+      const query = value.replace(/\s/g, "+");
+      const domain = `https://www.google.com/search?q=${query}`;
+      window.open(`${domain}`, "__blank");
+    }
+
     // For pages
     // Down
     if (e.keyCode === 40 && !underDomain && selectedPage === -1 && !suggestionsActive) {
@@ -387,7 +394,6 @@ function App() {
 
     // Enter
     if (e.keyCode === 13 && cursor > -1 && !render) {
-      console.log("here");
       window.open(`https://${sites[cursor]?.domain}`, "__blank");
     }
 
@@ -447,6 +453,7 @@ function App() {
             Talk to us
           </a>
         </div>
+        <div className="background" />
         {/* <label className="switch">
 					<input type="checkbox" />
 					<span className="slider round" onClick={switchTheme}></span>
@@ -606,8 +613,14 @@ function App() {
   );
 
   function companySuggest(value) {
+    // No company search results
+    if (value === "") {
+      return;
+    }
+
+    const query = `https://autocomplete.clearbit.com/v1/companies/suggest?query=${value.toLowerCase()}`;
     axios
-      .get(`https://autocomplete.clearbit.com/v1/companies/suggest?query=${value.toLowerCase()}`, {})
+      .get(query, {})
       .then((response) => {
         const sites = response.data;
         setSites(
@@ -618,7 +631,7 @@ function App() {
         );
       })
       .catch((error) => {
-        console.error(error);
+        throw error;
       });
   }
 }
@@ -645,6 +658,7 @@ const Container = styled.div`
     top: 10px;
     left: 10px;
     box-shadow: var(--shadow) 0px 10px 50px;
+    z-index: 2;
 
     img {
       width: 60%;
@@ -652,23 +666,51 @@ const Container = styled.div`
   }
 
   .logo:hover + .menu {
-    display: flex;
+    opacity: 1;
+    left: 30px;
+  }
+
+  .logo:hover ~ .background {
+    display: block;
+    opacity: 1;
+  }
+
+  .menu:hover + .background {
+    display: block;
+    opacity: 1;
   }
 
   .menu:hover {
-    display: flex;
+    opacity: 1;
+    left: 30px;
+  }
+
+  .background {
+    width: 100%;
+    height: 100%;
+    position: fixed;
+    display: none;
+    top: 0;
+    left: 0;
+    opacity: 0;
+    background: var(--black);
+    z-index: 1;
+    transition: 0.5s ease-in;
   }
 
   .menu {
-    width: 300px;
+    width: auto;
     height: auto;
-    display: none;
+    display: flex;
     flex-direction: column;
     align-items: flex-start;
     position: fixed;
     top: 50px;
-    left: 30px;
+    left: 20px;
     padding: 10px 0;
+    opacity: 0;
+    z-index: 2;
+    transition: 0.5s ease-in;
 
     a {
       line-height: 30px;
@@ -794,6 +836,7 @@ const Container = styled.div`
         border: none;
         outline: none;
         color: var(--white);
+        caret-color: var(--red);
       }
     }
 
@@ -910,6 +953,7 @@ const Container = styled.div`
     -webkit-animation-duration: 7s;
     animation-duration: 7s;
     fill: #f4f4f4;
+    opacity: 0.4;
   }
 
   .svg-waves__parallax > use:nth-child(2) {
@@ -918,6 +962,7 @@ const Container = styled.div`
     -webkit-animation-duration: 10s;
     animation-duration: 10s;
     fill: #ededed;
+    opacity: 0.4;
   }
 
   .svg-waves__parallax > use:nth-child(3) {
@@ -926,6 +971,7 @@ const Container = styled.div`
     -webkit-animation-duration: 13s;
     animation-duration: 13s;
     fill: #f2f2f2;
+    opacity: 0.4;
   }
 
   .svg-waves__parallax > use:nth-child(4) {
@@ -934,6 +980,7 @@ const Container = styled.div`
     -webkit-animation-duration: 20s;
     animation-duration: 20s;
     fill: #ececec;
+    opacity: 0.4;
   }
 
   @-webkit-keyframes move-forever {

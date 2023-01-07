@@ -2,9 +2,9 @@
 
 ## Description of changes
 
-> Describe your changes here.  Think of this section as a guide for
-> code reviewers.  How should someone reviewing your PR see your
-> changes.  For example, in what order should they read the changed
+> Describe your changes here. Think of this section as a guide for
+> code reviewers. How should someone reviewing your PR see your
+> changes. For example, in what order should they read the changed
 > files?
 
 ## Testing done

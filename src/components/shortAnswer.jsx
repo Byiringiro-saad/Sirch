@@ -30,7 +30,6 @@ function ShortAnswer({ query }) {
     fetch("https://api.openai.com/v1/completions", requestOptions)
       .then((response) => response.json())
       .then((data) => {
-        console.log(data);
         let answer = "";
         if (data?.choices?.length > 0) {
           answer = data.choices[0].text;
