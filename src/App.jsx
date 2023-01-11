@@ -14,7 +14,7 @@ import useLocalStorage from "use-local-storage";
 import { debounce } from "lodash";
 
 // icons
-import { BiSearch } from "react-icons/bi";
+import { AiOutlineCloseCircle } from "react-icons/ai";
 import { CopyIcon, CopiedIcon } from "./icons/icons";
 
 // components
@@ -69,6 +69,7 @@ function App() {
   const [five, setFive] = React.useState("");
   const [six, setSix] = React.useState("");
   const [seven, setSeven] = React.useState("");
+  const [escape, setEscape] = React.useState(false);
 
   // hyperbeam
   const [hb, setHb] = React.useState(null);
@@ -172,15 +173,15 @@ function App() {
         underDomainSearch(e.target.value);
       }
 
-      if (e.target.value.length > 2) {
-        setOne("two");
-        setFour("down");
-        setTwo("Suggestions & stashed pages");
-        setFive("right");
-        setThree("Domains");
-        setSix("");
-        setSeven("");
-      }
+      // if (e.target.value.length > 2) {
+      //   setOne("two");
+      //   setFour("down");
+      //   setTwo("Suggestions & stashed pages");
+      //   setFive("right");
+      //   setThree("Domains");
+      //   setSix("");
+      //   setSeven("");
+      // }
 
       if (e.target.value.length === 1) {
         setCursor(0);
@@ -189,18 +190,20 @@ function App() {
       if (!hasWhiteSpace(value)) {
         setCursor(0);
         setSuggestionsActive(false);
+        setEscape(false);
       }
 
       if (hasWhiteSpace(e.target.value)) {
         // changing the instructions
-        setTwo("Go");
+        setTwo("");
         setThree("");
-        setFour("enter");
+        setFour("");
         setFive("");
-        setOne("two");
-        setSix("down");
-        setSeven("Suggestions & stashed pages");
+        setOne("three");
+        setSix("more");
+        setSeven("");
         setUnderDomain(false);
+        setEscape(true);
 
         // removing the current icons
         setSites([]);
@@ -225,6 +228,7 @@ function App() {
       setCursor(0);
       setSuggestionsActive(false);
       setSelectedSuggestion(-1);
+      setEscape(false);
     }
 
     if (hasWhiteSpace(value) && !suggestionsActive && selectedSuggestion === -1) {
@@ -237,10 +241,12 @@ function App() {
       setSuggestionsActive(false);
       setSelectedSuggestion(-1);
       setSites([]);
+      setEscape(false);
     }
 
     if (value.length === 0 && suggestionsActive) {
       setSites([]);
+      setEscape(false);
     }
   }, [value]);
 
@@ -398,8 +404,25 @@ function App() {
     }
 
     // user hits any character apart from arrow keys when in hyperbeam
-    if (render && (e.keyCode !== 40 || e.keyCode !== 38 || e.keyCode !== 37 || e.keyCode !== 39)) {
+    if (render && e.keyCode === 27) {
       setRender(false);
+    }
+
+    // user hits escape but not in hyperbeam
+    if (e.keyCode === 27 && !render && hasWhiteSpace(value)) {
+      setVisibleSites(false);
+      setShowInstructions(false);
+      setSites([]);
+      setTabs([]);
+      setOne("");
+      setFour("");
+      setTwo("");
+      setFive("");
+      setThree("");
+      setSix("");
+      setSeven("");
+      setValue("");
+      setEscape(false);
     }
   };
 
@@ -413,12 +436,12 @@ function App() {
   React.useEffect(() => {
     if (hasWhiteSpace(value) && cursor > -1) {
       setRender(true);
-      setOne("three");
-      setTwo("");
-      setThree("More results");
-      setFour("");
-      setFive("right");
-      setSix("");
+      setOne("five");
+      setTwo("Go");
+      setThree("To Upvote");
+      setFour("enter");
+      setFive("up");
+      setSix("more");
       setSeven("");
     }
   }, [cursor]);
@@ -485,6 +508,12 @@ function App() {
                 ) : (
                   <></>
                   // <BiSearch className="icon" />
+                )}
+                {escape && (
+                  <div className="escape">
+                    <AiOutlineCloseCircle />
+                    <p>esc</p>
+                  </div>
                 )}
                 <input type="text" value={value} onKeyDown={handleKeyPressed} onChange={handleChange} autoFocus />
               </form>
@@ -807,6 +836,7 @@ const Container = styled.div`
       border-bottom: ${(props) => (props.instructions ? "1px solid var(--gray)" : "none")};
       display: flex;
       align-items: center;
+      position: relative;
       justify-content: center;
       margin: ${(props) => (props.instructions ? "0 0 10px 0" : "0")};
 
@@ -814,6 +844,24 @@ const Container = styled.div`
         color: var(--text);
         font-size: 1.5em;
         margin: 10px;
+      }
+
+      .escape {
+        width: 50px;
+        height: 30px;
+        display: flex;
+        padding: 0 6px;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        border: 1px solid var(--white);
+        border-radius: 5px;
+        position: absolute;
+        right: 10px;
+
+        p {
+          margin: -1px 0 0 0;
+        }
       }
 
       .underDomain {

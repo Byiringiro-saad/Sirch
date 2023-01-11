@@ -3,14 +3,11 @@ import styled from "styled-components";
 
 import { BsArrowRight } from "react-icons/bs";
 
-function Two() {
+function Four() {
   return (
     <Container>
-      Press
-      <span>
-        <BsArrowRight className="icon" />
-      </span>
-      to view search results
+      More results
+      <BsArrowRight className="icon" style={{ background: "var(--red)", color: "var(--black)" }} />
     </Container>
   );
 }
@@ -33,4 +30,4 @@ const Container = styled.div`
   }
 `;
 
-export default Two;
+export default Four;

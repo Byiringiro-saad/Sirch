@@ -10,6 +10,8 @@ import { BsArrowDown, BsArrowUp, BsArrowRight } from "react-icons/bs";
 // instructions
 import One from "./instructions/one";
 import Two from "./instructions/two";
+import Four from "./instructions/four";
+import Five from "./instructions/five";
 import Three from "./instructions/three";
 
 function Instruction({ one, two, three, four, render, five, six, seven }) {
@@ -19,39 +21,36 @@ function Instruction({ one, two, three, four, render, five, six, seven }) {
         {one === "one" && <One />}
         {one === "two" && <Two />}
         {one === "three" && <Three />}
-        {one !== "one" && one !== "two" && one !== "three" && one}
+        {one === "five" && <Five />}
+        {one !== "one" && one !== "two" && one !== "three" && one !== "five" && one}
       </div>
       <div className="commands">
         <div className="one">
           <p>{two}</p>
-          {four === "down" ? (
-            <BsArrowDown className="icon" />
-          ) : (
-            <>
-              {four === "up" ? (
-                <BsArrowUp className="icon" />
-              ) : (
-                <>{four === "enter" ? <AiOutlineEnter className="icon" /> : <></>}</>
-              )}
-            </>
-          )}
+          {four === "up" && <BsArrowUp className="icon" />}
+          {four === "down" && <BsArrowDown className="icon" />}
+          {four === "enter" && <AiOutlineEnter className="icon" />}
         </div>
-        {five === "right" ? (
+
+        {five === "right" && (
           <div className="two">
             <p>{three}</p>
             <BsArrowRight className="icon" />
           </div>
-        ) : (
-          <></>
         )}
-        {six === "down" ? (
+        {five === "up" && (
+          <div className="two">
+            <p>{three}</p>
+            <BsArrowUp className="icon" />
+          </div>
+        )}
+        {six === "down" && (
           <div className="two">
             <p>{seven}</p>
             <BsArrowDown className="icon" />
           </div>
-        ) : (
-          <></>
         )}
+        {six === "more" && <Four />}
       </div>
     </Container>
   );
@@ -90,7 +89,7 @@ const Container = styled.div`
     justify-content: flex-end;
 
     .two {
-      border-left: 1px solid var(--gray);
+      border-left: 2px solid var(--gray);
       margin: 0 0 0 5px;
       padding: 0 0 0 5px;
     }

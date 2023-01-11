@@ -1,21 +1,15 @@
 import React from "react";
 import styled from "styled-components";
 
-import { BsArrowRight } from "react-icons/bs";
-
-function Two() {
+function Five() {
   return (
     <Container>
-      Press
-      <span>
-        <BsArrowRight className="icon" />
-      </span>
-      to view search results
+      Press <span>Esc</span> to search again
     </Container>
   );
 }
 
-const Container = styled.div`
+const Container = styled.p`
   color: var(--white);
   width: 100%;
   height: 100%;
@@ -23,14 +17,14 @@ const Container = styled.div`
   flex-direction: row;
   align-items: center;
 
-  .icon {
-    background: var(--red);
-    color: var(--black);
+  span {
+    background: var(--icon);
+    color: var(--white);
     padding: 5px;
-    font-size: 2em;
+    font-size: 0.8em;
     border-radius: 2px;
     margin: 0 10px;
   }
 `;
 
-export default Two;
+export default Five;
