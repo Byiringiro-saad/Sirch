@@ -16,6 +16,7 @@ function Icons({
   tabs,
   data,
   handleRender,
+  render,
   cursor,
   setCursor,
   underDomain,
@@ -115,7 +116,7 @@ function Icons({
   };
 
   return (
-    <Container visible={visibleSites}>
+    <Container visible={visibleSites} render={render}>
       {currentBingRecord?.length > 0
         ? currentBingRecord?.map((tab, index) =>
             iconNav(
@@ -162,7 +163,7 @@ function Icons({
 
 const Container = styled.div`
   width: 650px;
-  height: 130px;
+  height: ${(props) => (props.render ? "50px" : "130px")};
   padding: 0px 10px;
   background: var(--black);
   border-radius: 0 0 10px 10px;
@@ -177,6 +178,9 @@ const Container = styled.div`
     }
 
     .name {
+      background: ${(props) => (props.render ? "var(--icon) !important" : "")};
+      justify-content: center !important;
+
       p {
         text-decoration: underline;
       }
@@ -184,7 +188,7 @@ const Container = styled.div`
   }
 
   .div {
-    width: 140px;
+    width: 150px;
     height: 100%;
     display: ${(props) => (props.visible ? "flex" : "none")};
     flex-direction: column;
@@ -214,7 +218,7 @@ const Container = styled.div`
       width: 100%;
       height: 80%;
       border-radius: 5px;
-      display: flex;
+      display: ${(props) => (props.render ? "none" : "flex")};
       align-items: center;
       justify-content: center;
 
@@ -232,12 +236,14 @@ const Container = styled.div`
 
     .name {
       width: 100%;
-      height: 15%;
+      height: ${(props) => (props.render ? "100%" : "15%")};
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: flex-end;
+      justify-content: ${(props) => (props.render ? "center" : "flex-end")};
       color: var(--white);
+      border-radius: 3px;
+      padding: 0 10px;
 
       p {
         width: 100%;

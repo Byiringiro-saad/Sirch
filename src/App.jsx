@@ -733,6 +733,7 @@ const Container = styled.div`
     display: flex;
     flex-direction: column;
     align-items: flex-start;
+    justify-content: space-around;
     position: fixed;
     top: 50px;
     left: 20px;
@@ -743,8 +744,9 @@ const Container = styled.div`
 
     a {
       line-height: 30px;
+      margin: 50px 0 0 0;
       text-decoration: none;
-      font-size: 1.2em;
+      font-size: 1.3em;
       color: var(--white);
     }
 
