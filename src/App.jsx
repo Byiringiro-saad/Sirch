@@ -747,6 +747,7 @@ const Container = styled.div`
       margin: 50px 0 0 0;
       text-decoration: none;
       font-size: 2em;
+      font-weight: 700;
       color: var(--white);
     }
 
