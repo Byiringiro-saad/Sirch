@@ -746,7 +746,7 @@ const Container = styled.div`
       line-height: 30px;
       margin: 50px 0 0 0;
       text-decoration: none;
-      font-size: 1.3em;
+      font-size: 2em;
       color: var(--white);
     }
 
