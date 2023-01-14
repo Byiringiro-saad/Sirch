@@ -8,7 +8,7 @@
 /* eslint-disable no-unused-vars */
 
 import axios from "axios";
-import React, { useMemo } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import styled from "styled-components";
 import useLocalStorage from "use-local-storage";
 import { debounce } from "lodash";
@@ -17,15 +17,20 @@ import { debounce } from "lodash";
 import { AiOutlineCloseCircle } from "react-icons/ai";
 import { CopyIcon, CopiedIcon } from "./icons/icons";
 
+// utils
+import { getSavedDomains } from "./action/supabaseAction";
+import { bingAutoSuggest, getBingSearch } from "./action/bingAction";
+import { checkSession, getEmbeddedUrl, loadHyperBeam, renderPage, updateTab } from "./action/hyperBeam";
+
+// portals
+import EmailPortal from "./portals/email";
+
 // components
+import Page from "./components/page";
 import Icons from "./components/icons";
 import Command from "./components/command";
 import Suggestion from "./components/suggestion";
 import Instruction from "./components/instruction";
-import { bingAutoSuggest, getBingSearch } from "./action/bingAction";
-import { checkSession, getEmbeddedUrl, loadHyperBeam, renderPage, updateTab } from "./action/hyperBeam";
-import { getSavedDomains } from "./action/supabaseAction";
-import Page from "./components/page";
 import ShortAnswer from "./components/shortAnswer";
 
 function App() {
@@ -34,20 +39,20 @@ function App() {
   const [theme, setTheme] = useLocalStorage("theme", defaultDark ? "dark" : "light");
 
   // local data
-  const [tabs, setTabs] = React.useState([]);
-  const [windowId, setWindowId] = React.useState(null);
-  const [data, setData] = React.useState([]);
-  const [value, setValue] = React.useState("");
-  const [backupValue, setBackupValue] = React.useState("");
-  const [sites, setSites] = React.useState([]);
-  const [visibleSites, setVisibleSites] = React.useState(false);
-  const [suggestions, setSuggestions] = React.useState([]);
-  const [suggestionsActive, setSuggestionsActive] = React.useState(false);
-  const [cursor, setCursor] = React.useState(0);
-  const [render, setRender] = React.useState(false);
-  const [selectedSuggestion, setSelectedSuggestion] = React.useState(-1);
-  const [underDomain, setUnderDomain] = React.useState(false);
-  const [underDomainData, setUnderDomainData] = React.useState([
+  const [tabs, setTabs] = useState([]);
+  const [windowId, setWindowId] = useState(null);
+  const [data, setData] = useState([]);
+  const [value, setValue] = useState("");
+  const [backupValue, setBackupValue] = useState("");
+  const [sites, setSites] = useState([]);
+  const [visibleSites, setVisibleSites] = useState(false);
+  const [suggestions, setSuggestions] = useState([]);
+  const [suggestionsActive, setSuggestionsActive] = useState(false);
+  const [cursor, setCursor] = useState(0);
+  const [render, setRender] = useState(false);
+  const [selectedSuggestion, setSelectedSuggestion] = useState(-1);
+  const [underDomain, setUnderDomain] = useState(false);
+  const [underDomainData, setUnderDomainData] = useState([
     "Home",
     "About Us",
     "Contact Us",
@@ -55,28 +60,29 @@ function App() {
     "Login",
     "Signup",
   ]);
-  const [underDomainFilterd, setUnderDomainFilterd] = React.useState([]);
-  const [selectedPage, setSelectedPage] = React.useState(-1);
-  const [spaceClicked, setSpaceClicked] = React.useState(false);
-  const [showSearch, setShowSearch] = React.useState(false);
-  const [showInstructions, setShowInstructions] = React.useState(false);
+  const [underDomainFilterd, setUnderDomainFilterd] = useState([]);
+  const [selectedPage, setSelectedPage] = useState(-1);
+  const [spaceClicked, setSpaceClicked] = useState(false);
+  const [showSearch, setShowSearch] = useState(false);
+  const [showInstructions, setShowInstructions] = useState(false);
+  const [askEmail, setAskEmail] = useState(false);
 
   // instructions
-  const [one, setOne] = React.useState("");
-  const [two, setTwo] = React.useState("");
-  const [three, setThree] = React.useState("");
-  const [four, setFour] = React.useState("");
-  const [five, setFive] = React.useState("");
-  const [six, setSix] = React.useState("");
-  const [seven, setSeven] = React.useState("");
-  const [escape, setEscape] = React.useState(false);
+  const [one, setOne] = useState("");
+  const [two, setTwo] = useState("");
+  const [three, setThree] = useState("");
+  const [four, setFour] = useState("");
+  const [five, setFive] = useState("");
+  const [six, setSix] = useState("");
+  const [seven, setSeven] = useState("");
+  const [escape, setEscape] = useState(false);
 
   // hyperbeam
-  const [hb, setHb] = React.useState(null);
+  const [hb, setHb] = useState(null);
 
   // supabase related state
-  const [fetchError, setFetchError] = React.useState(null);
-  const [domains, setDomains] = React.useState(null);
+  const [fetchError, setFetchError] = useState(null);
+  const [domains, setDomains] = useState(null);
 
   const fetchDomains = async () => {
     const { data, error } = await getSavedDomains();
@@ -111,7 +117,7 @@ function App() {
     }
   };
 
-  const [commands] = React.useState([
+  const [commands] = useState([
     {
       id: 1,
       name: "Clipboard History",
@@ -140,6 +146,11 @@ function App() {
 
   const underDomainSearch = (key) => {
     // not yet implemented, store data in underDomainData
+  };
+
+  const handleAskEmail = (e) => {
+    e.preventDefault();
+    setAskEmail(!askEmail);
   };
 
   const handleChange = async (e) => {
@@ -222,7 +233,7 @@ function App() {
     }
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!hasWhiteSpace(value) && suggestionsActive && selectedSuggestion === -1) {
       setSpaceClicked(false);
       setCursor(0);
@@ -258,7 +269,7 @@ function App() {
     await updateTab(hb, id);
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     // fetchDomain
     fetchDomains();
 
@@ -398,8 +409,13 @@ function App() {
       setUnderDomain(false);
     }
 
-    // Enter
+    // Enter when not in hyperbeam
     if (e.keyCode === 13 && cursor > -1 && !render) {
+      window.open(`https://${sites[cursor]?.domain}`, "__blank");
+    }
+
+    // Enter when in hyperbeam
+    if (e.keyCode === 13 && cursor > -1 && render) {
       window.open(`https://${sites[cursor]?.domain}`, "__blank");
     }
 
@@ -426,14 +442,14 @@ function App() {
     }
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     window.addEventListener("keydown", handleKeyDown);
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
   });
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (hasWhiteSpace(value) && cursor > -1) {
       setRender(true);
       setOne("five");
@@ -446,18 +462,19 @@ function App() {
     }
   }, [cursor]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     setOne("Type any character to begin");
   }, []);
 
   return (
     <>
       <Container data-theme={theme} instructions={showInstructions}>
+        {askEmail && <EmailPortal close={() => setAskEmail(!askEmail)} />}
         <div className="logo">
           <img src="/logo.png" alt="Sirch" />
         </div>
         <div className="menu">
-          <a href="#" target="_blank">
+          <a href="#" target="_blank" onClick={handleAskEmail}>
             Get Sirch for Chrome
           </a>
           <a href="#" target="_blank">
