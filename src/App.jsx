@@ -416,6 +416,7 @@ function App() {
 
     // Enter when in hyperbeam
     if (e.keyCode === 13 && cursor > -1 && render) {
+      console.log(sites);
       window.open(`https://${sites[cursor]?.domain}`, "__blank");
     }
 
