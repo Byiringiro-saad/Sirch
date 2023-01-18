@@ -79,6 +79,7 @@ function App() {
 
   // hyperbeam
   const [hb, setHb] = useState(null);
+  const [hbCursor, setHbCursor] = useState(-1);
 
   // supabase related state
   const [fetchError, setFetchError] = useState(null);
@@ -416,12 +417,23 @@ function App() {
 
     // Enter when in hyperbeam
     if (e.keyCode === 13 && cursor > -1 && render) {
-      window.open(`${tabs[cursor]?.pendingUrl}`, "__blank");
+      window.open(`${tabs[hbCursor]?.pendingUrl}`, "__blank");
+    }
+
+    // Right when in hyperbeam
+    if (e.keyCode === 37 && render) {
+      hbCursor < tabs.length && setHbCursor(hbCursor + 1);
+    }
+
+    // Left when in hyperbeam
+    if (e.keyCode === 39 && render) {
+      hbCursor >= 0 && setHbCursor(hbCursor - 1);
     }
 
     // user hits escape in hyperbeam
     if (render && e.keyCode === 27) {
       setRender(false);
+      setHbCursor(-1);
     }
 
     // user hits escape but not in hyperbeam
@@ -452,6 +464,7 @@ function App() {
   useEffect(() => {
     if (hasWhiteSpace(value) && cursor > -1) {
       setRender(true);
+      setHbCursor(0);
       setOne("five");
       setTwo("Go");
       setThree("To Upvote");
