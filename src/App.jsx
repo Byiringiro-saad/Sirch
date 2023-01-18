@@ -416,7 +416,7 @@ function App() {
 
     // Enter when in hyperbeam
     if (e.keyCode === 13 && cursor > -1 && render) {
-      window.open(`https://${tabs[cursor]?.pendingUrl}`, "__blank");
+      window.open(`${tabs[cursor]?.pendingUrl}`, "__blank");
     }
 
     // user hits escape in hyperbeam
