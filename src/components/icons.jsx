@@ -162,7 +162,7 @@ function Icons({
 }
 
 const Container = styled.div`
-  width: 650px;
+  width: 700px;
   height: ${(props) => (props.render ? "50px" : "130px")};
   padding: 0px 10px;
   background: var(--black);

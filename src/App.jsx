@@ -416,11 +416,10 @@ function App() {
 
     // Enter when in hyperbeam
     if (e.keyCode === 13 && cursor > -1 && render) {
-      console.log(sites);
-      window.open(`https://${sites[cursor]?.domain}`, "__blank");
+      window.open(`https://${tabs[cursor]?.pendingUrl}`, "__blank");
     }
 
-    // user hits any character apart from arrow keys when in hyperbeam
+    // user hits escape in hyperbeam
     if (render && e.keyCode === 27) {
       setRender(false);
     }
@@ -684,7 +683,7 @@ function App() {
 }
 
 const Container = styled.div`
-  width: 650px;
+  width: 700px;
   /* height: auto; */
   display: flex;
   flex-direction: column;
@@ -840,7 +839,7 @@ const Container = styled.div`
   }
 
   .search {
-    width: 650px;
+    width: 700px;
     height: auto;
     background: var(--black);
     margin: 30px 0;
