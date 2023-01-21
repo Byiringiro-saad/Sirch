@@ -79,7 +79,6 @@ function App() {
 
   // hyperbeam
   const [hb, setHb] = useState(null);
-  const [hbCursor, setHbCursor] = useState(-1);
 
   // supabase related state
   const [fetchError, setFetchError] = useState(null);
@@ -352,7 +351,7 @@ function App() {
     }
 
     // Down
-    if (e.keyCode === 40 && suggestionsActive && selectedSuggestion >= 0 && selectedSuggestion < 4) {
+    if (e.keyCode === 40 && suggestionsActive && selectedSuggestion >= 0 && selectedSuggestion < 7) {
       setValue(suggestions[selectedSuggestion + 1]?.displayText);
       setSelectedSuggestion(selectedSuggestion + 1);
     }
@@ -417,27 +416,16 @@ function App() {
 
     // Enter when in hyperbeam
     if (e.keyCode === 13 && cursor > -1 && render) {
-      window.open(`${tabs[hbCursor]?.pendingUrl}`, "__blank");
-    }
-
-    // Right when in hyperbeam
-    if (e.keyCode === 37 && render) {
-      hbCursor < tabs.length && setHbCursor(hbCursor + 1);
-    }
-
-    // Left when in hyperbeam
-    if (e.keyCode === 39 && render) {
-      hbCursor >= 0 && setHbCursor(hbCursor - 1);
+      window.open(`${tabs[cursor]?.pendingUrl}`, "__blank");
     }
 
     // user hits escape in hyperbeam
     if (render && e.keyCode === 27) {
       setRender(false);
-      setHbCursor(-1);
     }
 
     // user hits escape but not in hyperbeam
-    if (e.keyCode === 27 && !render && hasWhiteSpace(value)) {
+    if (e.keyCode === 27 && !render) {
       setVisibleSites(false);
       setShowInstructions(false);
       setSites([]);
@@ -464,7 +452,6 @@ function App() {
   useEffect(() => {
     if (hasWhiteSpace(value) && cursor > -1) {
       setRender(true);
-      setHbCursor(0);
       setOne("five");
       setTwo("Go");
       setThree("To Upvote");
@@ -487,23 +474,31 @@ function App() {
           <img src="/logo.png" alt="Sirch" />
         </div>
         <div className="menu">
-          <a href="#" target="_blank" onClick={handleAskEmail}>
+          <a href="https://forms.gle/wFc7Y39g5NgyVhw26" target="_blank" className="red" rel="noreferrer">
             Get Sirch for Chrome
           </a>
-          <a href="#" target="_blank">
+          <a
+            href="https://docs.google.com/document/d/11bEuieOz1OKIphPjFUhFhlss6AurcEWAuz43q0djm1c/edit?usp=sharing"
+            rel="noreferrer"
+            target="_blank"
+          >
             The death of Google
           </a>
-          <a href="#" target="_blank">
+          <a href="https://twitter.com/SirchTheWeb" rel="noreferrer" target="_blank">
             Twitter fun
           </a>
-          <a href="#" target="_blank">
+          <a href="https://www.linkedin.com/company/43178146" rel="noreferrer" target="_blank">
             Linkedin
           </a>
           <a href="#" target="_blank">
             Sirch Cash & Ads
           </a>
-          <a href="#" target="_blank">
-            Talk to us
+          <a
+            href="mailto:josh@sirchit.com?subject=I love Sirch&body=Hi there Sirch team, I have some feedback on Sirch (fill in the blank here), and I'd also like to invest in Sirch Cash."
+            target="_blank"
+            rel="noreferrer"
+          >
+            josh@sirchit.com
           </a>
         </div>
         <div className="background" />
@@ -601,8 +596,8 @@ function App() {
                         <p>Commands</p>
                       </div>
                       <div className="content">
-                        {commands.map((command) => (
-                          <Command command={command} key={command?.id} />
+                        {commands.map((command, index) => (
+                          <Command command={command} key={command?.id} selected={selectedSuggestion === index + 5} />
                         ))}
                       </div>
                     </div>
@@ -779,6 +774,10 @@ const Container = styled.div`
       font-size: 2em;
       font-weight: 700;
       color: var(--white);
+    }
+
+    .red {
+      color: var(--red);
     }
 
     a:hover {

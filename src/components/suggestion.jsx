@@ -27,7 +27,7 @@ const Container = styled.div`
   align-items: center;
   justify-content: space-between;
   padding: 0 10px;
-  margin: 10px 0;
+  margin: 5px 0;
   border-radius: 10px;
   background: ${(props) => (props.selected ? "var(--gray)" : "")};
 
