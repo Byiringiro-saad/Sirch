@@ -1,12 +1,10 @@
 import React from "react";
 import styled from "styled-components";
 
-import { BiSpaceBar } from "react-icons/bi";
-
 function One() {
   return (
     <Container>
-      Hit <BiSpaceBar className="icon" /> to search the web
+      Hit <span>Space</span> to search the web
     </Container>
   );
 }
@@ -26,6 +24,14 @@ const Container = styled.p`
     font-size: 2em;
     border-radius: 2px;
     margin: 0 10px;
+  }
+
+  span {
+    padding: 5px 15px;
+    margin: 0 5px;
+    border-radius: 4px;
+    background: var(--red);
+    color: var(--black);
   }
 `;
 
