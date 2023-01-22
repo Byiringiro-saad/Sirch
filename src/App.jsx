@@ -176,7 +176,7 @@ function App() {
         setShowInstructions(true);
         setOne("one");
         setFour("enter");
-        setTwo("Go");
+        setTwo("Google SERP");
         setFive("right");
         setThree("Domains");
         setSix("down");
