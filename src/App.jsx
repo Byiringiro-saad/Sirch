@@ -176,7 +176,7 @@ function App() {
         setShowInstructions(true);
         setOne("one");
         setFour("enter");
-        setTwo("Google SERP");
+        setTwo("Go");
         setFive("right");
         setThree("Domains");
         setSix("down");
@@ -206,10 +206,10 @@ function App() {
 
       if (hasWhiteSpace(e.target.value)) {
         // changing the instructions
-        setTwo("");
-        setThree("");
-        setFour("");
-        setFive("");
+        setTwo("Google SERP");
+        setThree("Domains");
+        setFour("enter");
+        setFive("right");
         setOne("three");
         setSix("more");
         setSeven("");
@@ -352,13 +352,18 @@ function App() {
 
     // Down
     if (e.keyCode === 40 && suggestionsActive && selectedSuggestion >= 0 && selectedSuggestion < 7) {
-      setValue(suggestions[selectedSuggestion + 1]?.displayText);
+      if (selectedSuggestion !== 4 && selectedSuggestion !== 5 && selectedSuggestion !== 6) {
+        setValue(suggestions[selectedSuggestion + 1]?.displayText);
+      }
       setSelectedSuggestion(selectedSuggestion + 1);
     }
 
     // Up
     if (e.keyCode === 38 && suggestionsActive && selectedSuggestion > 0) {
-      setValue(suggestions[selectedSuggestion - 1]?.displayText);
+      console.log(selectedSuggestion);
+      if (selectedSuggestion !== 5 && selectedSuggestion !== 6 && selectedSuggestion !== 7) {
+        setValue(suggestions[selectedSuggestion - 1]?.displayText);
+      }
       setSelectedSuggestion(selectedSuggestion - 1);
     }
 
@@ -392,7 +397,7 @@ function App() {
     }
 
     // Down
-    if (e.keyCode === 40 && underDomain && selectedPage >= 0) {
+    if (e.keyCode === 40 && underDomain && selectedPage >= 0 && selectedPage <= underDomainData.length + 1) {
       setSelectedPage(selectedPage + 1);
     }
 
@@ -470,9 +475,11 @@ function App() {
     <>
       <Container data-theme={theme} instructions={showInstructions}>
         {askEmail && <EmailPortal close={() => setAskEmail(!askEmail)} />}
-        <div className="logo">
-          <img src="/logo.png" alt="Sirch" />
-        </div>
+        {!render && (
+          <div className="logo">
+            <img src="/logo.png" alt="Sirch" />
+          </div>
+        )}
         <div className="menu">
           <a href="https://forms.gle/wFc7Y39g5NgyVhw26" target="_blank" className="red" rel="noreferrer">
             Get Sirch for Chrome
@@ -482,23 +489,30 @@ function App() {
             rel="noreferrer"
             target="_blank"
           >
-            The death of Google
-          </a>
-          <a href="https://twitter.com/SirchTheWeb" rel="noreferrer" target="_blank">
-            Twitter fun
+            Invest in Sirch Cash
           </a>
           <a href="https://www.linkedin.com/company/43178146" rel="noreferrer" target="_blank">
             Linkedin
           </a>
-          <a href="#" target="_blank">
-            Sirch Cash & Ads
+          <a
+            href="https://www.facebook.com/profile.php?id=100089316559376&mibextid=ZbWKwL"
+            rel="noreferrer"
+            target="_blank"
+          >
+            Facebook
+          </a>
+          <a href="https://twitter.com/SirchTheWeb" rel="noreferrer" target="_blank">
+            Twitter
+          </a>
+          <a href="https://www.tiktok.com/@sirch.it?_t=8ZFLQTtiPM6&_r=1" rel="noreferrer" target="_blank">
+            TikTok
           </a>
           <a
             href="mailto:josh@sirchit.com?subject=I love Sirch&body=Hi there Sirch team, I have some feedback on Sirch (fill in the blank here), and I'd also like to invest in Sirch Cash."
             target="_blank"
             rel="noreferrer"
           >
-            josh@sirchit.com
+            Email
           </a>
         </div>
         <div className="background" />
@@ -597,7 +611,15 @@ function App() {
                       </div>
                       <div className="content">
                         {commands.map((command, index) => (
-                          <Command command={command} key={command?.id} selected={selectedSuggestion === index + 5} />
+                          <Command
+                            command={command}
+                            key={command?.id}
+                            selected={
+                              suggestionsActive
+                                ? selectedSuggestion === index + 5
+                                : selectedPage === underDomainData.length + index
+                            }
+                          />
                         ))}
                       </div>
                     </div>
