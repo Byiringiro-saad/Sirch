@@ -480,41 +480,43 @@ function App() {
             <img src="/logo.png" alt="Sirch" />
           </div>
         )}
-        <div className="menu">
-          <a href="https://forms.gle/wFc7Y39g5NgyVhw26" target="_blank" className="red" rel="noreferrer">
-            Get Sirch for Chrome
-          </a>
-          <a
-            href="https://docs.google.com/document/d/11bEuieOz1OKIphPjFUhFhlss6AurcEWAuz43q0djm1c/edit?usp=sharing"
-            rel="noreferrer"
-            target="_blank"
-          >
-            Invest in Sirch Cash
-          </a>
-          <a href="https://www.linkedin.com/company/43178146" rel="noreferrer" target="_blank">
-            Linkedin
-          </a>
-          <a
-            href="https://www.facebook.com/profile.php?id=100089316559376&mibextid=ZbWKwL"
-            rel="noreferrer"
-            target="_blank"
-          >
-            Facebook
-          </a>
-          <a href="https://twitter.com/SirchTheWeb" rel="noreferrer" target="_blank">
-            Twitter
-          </a>
-          <a href="https://www.tiktok.com/@sirch.it?_t=8ZFLQTtiPM6&_r=1" rel="noreferrer" target="_blank">
-            TikTok
-          </a>
-          <a
-            href="mailto:josh@sirchit.com?subject=I love Sirch&body=Hi there Sirch team, I have some feedback on Sirch (fill in the blank here), and I'd also like to invest in Sirch Cash."
-            target="_blank"
-            rel="noreferrer"
-          >
-            Email
-          </a>
-        </div>
+        {!render && (
+          <div className="menu">
+            <a href="https://forms.gle/wFc7Y39g5NgyVhw26" target="_blank" className="red" rel="noreferrer">
+              Get Sirch for Chrome
+            </a>
+            <a
+              href="https://docs.google.com/document/d/11bEuieOz1OKIphPjFUhFhlss6AurcEWAuz43q0djm1c/edit?usp=sharing"
+              rel="noreferrer"
+              target="_blank"
+            >
+              Invest in Sirch Cash
+            </a>
+            <a href="https://www.linkedin.com/company/43178146" rel="noreferrer" target="_blank">
+              Linkedin
+            </a>
+            <a
+              href="https://www.facebook.com/profile.php?id=100089316559376&mibextid=ZbWKwL"
+              rel="noreferrer"
+              target="_blank"
+            >
+              Facebook
+            </a>
+            <a href="https://twitter.com/SirchTheWeb" rel="noreferrer" target="_blank">
+              Twitter
+            </a>
+            <a href="https://www.tiktok.com/@sirch.it?_t=8ZFLQTtiPM6&_r=1" rel="noreferrer" target="_blank">
+              TikTok
+            </a>
+            <a
+              href="mailto:josh@sirchit.com?subject=I love Sirch&body=Hi there Sirch team, I have some feedback on Sirch (fill in the blank here), and I'd also like to invest in Sirch Cash."
+              target="_blank"
+              rel="noreferrer"
+            >
+              Email
+            </a>
+          </div>
+        )}
         <div className="background" />
         {/* <label className="switch">
 					<input type="checkbox" />
