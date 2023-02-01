@@ -79,6 +79,7 @@ function App() {
 
   // hyperbeam
   const [hb, setHb] = useState(null);
+  const [hbCursor, setHbCursor] = useState(-1);
 
   // supabase related state
   const [fetchError, setFetchError] = useState(null);
@@ -207,9 +208,9 @@ function App() {
       if (hasWhiteSpace(e.target.value)) {
         // changing the instructions
         setTwo("Google SERP");
-        setThree("Domains");
+        setThree("");
         setFour("enter");
-        setFive("right");
+        setFive("");
         setOne("three");
         setSix("more");
         setSeven("");
@@ -360,7 +361,6 @@ function App() {
 
     // Up
     if (e.keyCode === 38 && suggestionsActive && selectedSuggestion > 0) {
-      console.log(selectedSuggestion);
       if (selectedSuggestion !== 5 && selectedSuggestion !== 6 && selectedSuggestion !== 7) {
         setValue(suggestions[selectedSuggestion - 1]?.displayText);
       }
@@ -421,12 +421,40 @@ function App() {
 
     // Enter when in hyperbeam
     if (e.keyCode === 13 && cursor > -1 && render) {
-      window.open(`${tabs[cursor]?.pendingUrl}`, "__blank");
+      window.open(`${tabs[hbCursor]?.pendingUrl}`, "__blank");
+    }
+
+    // Right when in hyperbeam
+    if (e.keyCode === 37 && render) {
+      hbCursor < tabs.length && setHbCursor(hbCursor + 1);
+    }
+
+    // Left when in hyperbeam
+    if (e.keyCode === 39 && render) {
+      hbCursor >= 0 && setHbCursor(hbCursor - 1);
     }
 
     // user hits escape in hyperbeam
     if (render && e.keyCode === 27) {
       setRender(false);
+      setHbCursor(-1);
+    }
+
+    // user hits escape but not in hyperbeam
+    if (e.keyCode === 27 && !render && hasWhiteSpace(value)) {
+      setVisibleSites(false);
+      setShowInstructions(false);
+      setSites([]);
+      setTabs([]);
+      setOne("");
+      setFour("");
+      setTwo("");
+      setFive("");
+      setThree("");
+      setSix("");
+      setSeven("");
+      setValue("");
+      setEscape(false);
     }
 
     // user hits escape but not in hyperbeam
@@ -457,6 +485,7 @@ function App() {
   useEffect(() => {
     if (hasWhiteSpace(value) && cursor > -1) {
       setRender(true);
+      setHbCursor(0);
       setOne("five");
       setTwo("Go");
       setThree("To Upvote");
@@ -880,7 +909,6 @@ const Container = styled.div`
     background: var(--black);
     margin: 30px 0;
     border-radius: 10px;
-    /* border: 3px solid var(--gray); */
     box-shadow: var(--shadow) 0px 10px 50px;
     display: flex;
     flex-direction: column;

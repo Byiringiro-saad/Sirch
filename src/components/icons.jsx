@@ -47,8 +47,6 @@ function Icons({
     }
   };
 
-  console.log(sites);
-
   const handleKeyDown = async (e) => {
     if (cursor === 3 && e.keyCode === 39) {
       if (currentNav === nNavsForDomain || currentNav === nNavsForBing) {
