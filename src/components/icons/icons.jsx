@@ -165,12 +165,12 @@ const Container = styled.div`
   width: 700px;
   height: ${(props) => (props.render ? "50px" : "130px")};
   padding: 0px 10px;
-  background: var(--black);
-  border-radius: 0 0 10px 10px;
   display: flex;
   flex-direction: row;
   align-items: center;
-  box-shadow: ${(props) => (props.visible ? "var(--shadow) 0px 10px 50px" : "none")};
+  background: var(--black);
+  border-radius: 0 0 10px 10px;
+  border: ${(props) => (props.visible ? "1px solid var(--gray)" : "none")};
 
   .selected {
     .gray {
