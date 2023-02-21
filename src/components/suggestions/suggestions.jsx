@@ -36,6 +36,44 @@ function Suggestions({ suggestions, selectedSuggestion, handleRenderPage }) {
   );
 }
 
-const Container = styled.div``;
+const Container = styled.div`
+  width: 100%;
+  height: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+
+  .title {
+    width: 100%;
+    height: 25px;
+
+    p {
+      color: var(--text);
+      font-weight: 700;
+    }
+  }
+
+  .content {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    > p {
+      width: 100%;
+      line-height: 25px;
+    }
+
+    .para {
+      width: 100%;
+      height: 25px;
+
+      p {
+        color: var(--text);
+        text-align: center;
+      }
+    }
+  }
+`;
 
 export default Suggestions;

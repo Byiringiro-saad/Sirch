@@ -4,7 +4,7 @@ import styled from "styled-components";
 // icons
 import { AiOutlineCloseCircle } from "react-icons/ai";
 
-function Search({ underDomain, sites, cursor, value, handleValue, escape }) {
+function Search({ underDomain, sites, cursor, value, handleValue, escape, visibleSites }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
   };
@@ -20,7 +20,7 @@ function Search({ underDomain, sites, cursor, value, handleValue, escape }) {
   };
 
   return (
-    <Container>
+    <Container visibleSites={visibleSites}>
       <form className="input" onSubmit={handleSubmit}>
         {underDomain && sites?.length > 0 ? (
           <div className="underDomain">
@@ -44,7 +44,7 @@ function Search({ underDomain, sites, cursor, value, handleValue, escape }) {
 const Container = styled.div`
   width: 700px;
   height: auto;
-  margin: 30px 0 0 0;
+  margin: ${(props) => (props.visibleSites ? "30px 0 0 0" : "200px 0 0 0")};
   border-radius: 10px;
   display: flex;
   flex-direction: column;

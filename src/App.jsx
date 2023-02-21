@@ -497,28 +497,31 @@ function App() {
                 value={value}
                 cursor={cursor}
                 escape={escape}
+                visibleSites={visibleSites}
                 handleValue={handleValue}
                 underDomain={underDomainVisible}
               />
               {visibleSites && (
-                <div className="container">
-                  {underDomainVisible && (
-                    <UnderDomain
+                <>
+                  <ShortAnswer query={value} />
+                  <div className="container">
+                    {underDomainVisible && (
+                      <UnderDomain
+                        selectedPage={selectedPage}
+                        underDomainData={underDomainData}
+                        underDomainFilterd={underDomainFilterd}
+                      />
+                    )}
+                    {suggestionsVisible && <Suggestions />}
+                    <Commands
+                      commands={commands}
                       selectedPage={selectedPage}
                       underDomainData={underDomainData}
-                      underDomainFilterd={underDomainFilterd}
+                      suggestionsVisible={suggestionsVisible}
+                      selectedSuggestion={selectedSuggestion}
                     />
-                  )}
-                  <ShortAnswer query={value} />
-                  {suggestionsVisible && <Suggestions />}
-                  <Commands
-                    commands={commands}
-                    selectedPage={selectedPage}
-                    underDomainData={underDomainData}
-                    suggestionsVisible={suggestionsVisible}
-                    selectedSuggestion={selectedSuggestion}
-                  />
-                </div>
+                  </div>
+                </>
               )}
             </div>
           )}
@@ -557,12 +560,15 @@ const Container = styled.div`
   align-items: center;
 
   .container {
-    width: 710px;
+    width: 700px;
     height: auto;
     overflow-y: scroll;
     display: flex;
     flex-direction: column;
     align-items: flex-start;
+    padding: 30px 20px;
+    border-radius: 5px;
+    border: 1px solid var(--gray);
 
     /* width */
     ::-webkit-scrollbar {

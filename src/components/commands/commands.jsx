@@ -31,9 +31,7 @@ const Container = styled.div`
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  padding: 30px 20px;
-  border-radius: 5px;
-  border: 1px solid var(--gray);
+  margin: 30px 0 0 0;
 
   .title {
     width: 100%;

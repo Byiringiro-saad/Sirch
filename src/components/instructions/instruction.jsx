@@ -57,7 +57,7 @@ function Instruction({ one, two, three, four, render, five, six, seven }) {
 }
 
 const Container = styled.div`
-  width: ${(props) => (props.render ? "650px" : "98%")};
+  width: ${(props) => (props.render ? "650px" : "100%")};
   height: 60px;
   display: flex;
   margin: 30px 0;
