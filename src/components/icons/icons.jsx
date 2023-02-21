@@ -8,8 +8,8 @@
 
 import React, { useState } from "react";
 import styled from "styled-components";
-import { openNewTab } from "../action/bingAction";
-import { addDomain } from "../action/supabaseAction";
+import { openNewTab } from "../../action/bingAction";
+import { addDomain } from "../../action/supabaseAction";
 
 function Icons({
   sites,

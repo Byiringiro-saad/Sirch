@@ -8,11 +8,11 @@ import { AiOutlineEnter } from "react-icons/ai";
 import { BsArrowDown, BsArrowUp, BsArrowRight } from "react-icons/bs";
 
 // instructions
-import One from "./instructions/one";
-import Two from "./instructions/two";
-import Four from "./instructions/four";
-import Five from "./instructions/five";
-import Three from "./instructions/three";
+import One from "./one";
+import Two from "./two";
+import Four from "./four";
+import Five from "./five";
+import Three from "./three";
 
 function Instruction({ one, two, three, four, render, five, six, seven }) {
   return (
