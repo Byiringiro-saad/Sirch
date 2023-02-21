@@ -31,14 +31,13 @@ const Container = styled.div`
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  padding: 30px 10px;
-  margin: 30px 0 0 0;
+  padding: 30px 20px;
   border-radius: 5px;
   border: 1px solid var(--gray);
 
   .title {
     width: 100%;
-    height: 25px;
+    height: 35px;
 
     p {
       color: var(--text);

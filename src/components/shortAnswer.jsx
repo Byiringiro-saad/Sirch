@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import styled from "styled-components";
 
 function ShortAnswer({ query }) {
   const debounceTimeMs = 1000;
@@ -53,7 +54,15 @@ function ShortAnswer({ query }) {
     return () => clearTimeout(getData);
   }, [query]);
 
-  return <div className="short_ans">{queryResult}</div>;
+  return <Container>{queryResult}</Container>;
 }
+
+const Container = styled.div`
+  width: 100%;
+  height: 60px;
+  display: flex;
+  padding: 0 0 0 5px;
+  align-items: center;
+`;
 
 export default ShortAnswer;

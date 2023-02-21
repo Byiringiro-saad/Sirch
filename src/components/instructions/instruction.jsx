@@ -58,14 +58,16 @@ function Instruction({ one, two, three, four, render, five, six, seven }) {
 
 const Container = styled.div`
   width: ${(props) => (props.render ? "650px" : "98%")};
-  height: 50px;
+  height: 60px;
   display: flex;
+  margin: 30px 0;
+  border-radius: 5px;
   flex-direction: row;
   align-items: center;
-  padding: 0 15px;
+  padding: 10px 15px;
   border-radius: ${(props) => (props.render ? "10px 10px 0 0" : "")};
   justify-content: space-between;
-  border: ${(props) => (props.render ? "1px solid var(--gray)" : "")};
+  border: ${(props) => (!props.render ? "1px solid var(--gray)" : "")};
   position: ${(props) => (props.render ? "fixed" : "relative")};
   box-shadow: ${(props) => (props.render ? "var(--shadow) 0px 10px 50px" : "none")};
   bottom: 0;
