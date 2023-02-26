@@ -28,7 +28,8 @@ export const updateTab = async (hb, id) => {
 };
 
 export async function loadHyperBeam(container, embedUrl) {
-  return await Hyperbeam(container, embedUrl);
+  const hyperbeamWebOptions = { volume: 0 };
+  return await Hyperbeam(container, embedUrl, hyperbeamWebOptions);
 }
 
 export const getEmbeddedUrl = async () => {

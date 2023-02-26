@@ -44,3 +44,16 @@ export const updateDomain = async (data) =>
     .from("sirch-domain")
     .update([{ domain_name: data.domain_name, count: data.count + 1 }])
     .eq("id", data.id);
+
+export const getUnderDomainsByDomain = async (domain) => {
+  const { data, error } = await supabaseClient.from("under-domains").select().eq("domain", domain).select();
+
+  if (error) {
+    // no record found
+    return [];
+  }
+
+  if (data) {
+    return data.map((d) => d["search-text"]) || [];
+  }
+};

@@ -44,8 +44,8 @@ function Search({ underDomain, sites, cursor, value, handleValue, escape, visibl
 const Container = styled.div`
   width: 700px;
   height: auto;
-  margin: ${(props) => (props.visibleSites ? "30px 0 0 0" : "200px 0 0 0")};
   border-radius: 10px;
+  margin: 30px 0 0 0;
   display: flex;
   flex-direction: column;
   align-items: center;

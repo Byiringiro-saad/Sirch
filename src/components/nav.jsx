@@ -1,24 +1,29 @@
+/* eslint-disable react/jsx-no-useless-fragment */
 import React from "react";
 import styled from "styled-components";
 
-function Nav() {
+function Nav({ render }) {
   return (
-    <Container>
-      <div className="logo">
-        <img src="/logo.png" alt="Sirch" />
-      </div>
-      <div className="navigation">
-        <a href="https://sirch.cash/" rel="noreferrer" target="_blank" className="link">
-          Download for Chrome
-        </a>
-        <a href="https://sirch.cash/" rel="noreferrer" target="_blank" className="link">
-          Support
-        </a>
-        <a href="https://sirch.cash/" rel="noreferrer" target="_blank" className="button">
-          Buy S Cash
-        </a>
-      </div>
-    </Container>
+    <>
+      {!render && (
+        <Container>
+          <div className="logo">
+            <img src="/logo.png" alt="Sirch" />
+          </div>
+          <div className="navigation">
+            <a href="https://sirch.cash/" rel="noreferrer" target="_blank" className="link">
+              Download for Chrome
+            </a>
+            <a href="https://meet.google.com/duc-nihh-rot" rel="noreferrer" target="_blank" className="link">
+              Support
+            </a>
+            <a href="https://sirch.cash/" rel="noreferrer" target="_blank" className="button">
+              Buy S Cash
+            </a>
+          </div>
+        </Container>
+      )}
+    </>
   );
 }
 
