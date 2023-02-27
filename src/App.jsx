@@ -164,6 +164,7 @@ function App() {
       if (e.target.value?.length === 0) {
         setVisibleSites(false);
         setShowInstructions(false);
+        setSitesLoading(false);
         setSites([]);
         setTabs([]);
         setOne("");
@@ -206,6 +207,7 @@ function App() {
         setCursor(0);
         setSuggestionsActive(false);
         setEscape(false);
+        setSitesLoading(false);
       }
 
       if (hasWhiteSpace(e.target.value)) {
@@ -219,6 +221,8 @@ function App() {
         setSeven("");
         setUnderDomain(false);
         setEscape(true);
+
+        setSitesLoading(true);
 
         // removing the current icons
         setSites([]);
@@ -354,6 +358,7 @@ function App() {
       tabs = await renderPage(hb, data, windowId);
       if (tabs.length) {
         setTabs(tabs);
+        setSitesLoading(false);
         if (windowId !== tabs[0].windowId) {
           setWindowId(tabs[0].windowId);
         }
@@ -703,14 +708,11 @@ function App() {
       return;
     }
 
-    setSitesLoading(true);
-
     const query = `https://autocomplete.clearbit.com/v1/companies/suggest?query=${value.toLowerCase()}`;
     axios
       .get(query, {})
       .then((response) => {
         const sites = response.data;
-        setSitesLoading(false);
         setSites(
           sites.map((site) => ({
             ...site,

@@ -123,44 +123,44 @@ function Icons({
   return (
     <Container visible={visibleSites} render={render}>
       {loading ? (
-        <>
+        <div className="loading">
           <ContentLoader
-            width={160}
+            width={150}
             height={100}
-            viewBox="0 0 160 100"
+            viewBox="0 0 150 100"
             backgroundColor="#f0f0f0"
             foregroundColor="#dedede"
           >
-            <rect x="20" y="0" rx="4" ry="4" width="160" height="100" />
+            <rect x="10" y="0" rx="4" ry="4" width="150" height="100" />
           </ContentLoader>
           <ContentLoader
-            width={160}
+            width={170}
             height={100}
-            viewBox="0 0 160 100"
+            viewBox="0 0 170 100"
             backgroundColor="#f0f0f0"
             foregroundColor="#dedede"
           >
-            <rect x="40" y="0" rx="4" ry="4" width="160" height="100" />
+            <rect x="25" y="0" rx="4" ry="4" width="170" height="100" />
           </ContentLoader>
           <ContentLoader
-            width={160}
+            width={170}
             height={100}
-            viewBox="0 0 160 100"
+            viewBox="0 0 170 100"
             backgroundColor="#f0f0f0"
             foregroundColor="#dedede"
           >
-            <rect x="40" y="0" rx="4" ry="4" width="160" height="100" />
+            <rect x="25" y="0" rx="4" ry="4" width="170" height="100" />
           </ContentLoader>
           <ContentLoader
-            width={160}
+            width={170}
             height={100}
-            viewBox="0 0 160 100"
+            viewBox="0 0 170 100"
             backgroundColor="#f0f0f0"
             foregroundColor="#dedede"
           >
-            <rect x="40" y="0" rx="4" ry="4" width="160" height="100" />
+            <rect x="25" y="0" rx="4" ry="4" width="170" height="100" />
           </ContentLoader>
-        </>
+        </div>
       ) : (
         <>
           {currentBingRecord?.length > 0
@@ -239,6 +239,16 @@ const Container = styled.div`
         text-decoration: underline;
       }
     }
+  }
+
+  .loading {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 10px 0 0;
   }
 
   .div {
