@@ -1,19 +1,31 @@
+/* eslint-disable jsx-a11y/no-noninteractive-element-interactions */
+/* eslint-disable jsx-a11y/click-events-have-key-events */
 /* eslint-disable react/jsx-no-useless-fragment */
-import React from "react";
 import styled from "styled-components";
+import React, { useState } from "react";
+
+// components
+import Form from "./popup/form";
 
 function Nav({ render }) {
+  const [showForm, setShowForm] = useState(false);
+
+  const handleShowForm = () => {
+    setShowForm(!showForm);
+  };
+
   return (
     <>
+      {showForm && <Form handleShow={handleShowForm} />}
       {!render && (
         <Container>
           <div className="logo">
             <img src="/logo.png" alt="Sirch" />
           </div>
           <div className="navigation">
-            <a href="https://sirch.cash/" rel="noreferrer" target="_blank" className="link">
+            <p className="link" onClick={handleShowForm}>
               Download for Chrome
-            </a>
+            </p>
             <a href="https://meet.google.com/duc-nihh-rot" rel="noreferrer" target="_blank" className="link">
               Support
             </a>
@@ -60,13 +72,18 @@ const Container = styled.div`
     flex-direction: row;
     align-items: center;
 
-    a {
+    a,
+    p {
       text-decoration: none;
       margin: 0 0 0 30px;
     }
 
-    a.link {
+    .link {
       color: var(--white);
+    }
+
+    p {
+      cursor: pointer;
     }
 
     a.button {
