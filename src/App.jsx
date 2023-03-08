@@ -41,6 +41,7 @@ function App() {
   const [theme, setTheme] = useLocalStorage("theme", defaultDark ? "dark" : "light");
 
   // local data
+  const [showVideo, setShowVideo] = useState(true);
   const [tabs, setTabs] = useState([]);
   const [windowId, setWindowId] = useState(null);
   const [data, setData] = useState([]);
@@ -164,6 +165,7 @@ function App() {
       if (e.target.value?.length === 0) {
         setVisibleSites(false);
         setShowInstructions(false);
+        setShowVideo(true);
         setSitesLoading(false);
         setSites([]);
         setTabs([]);
@@ -179,6 +181,7 @@ function App() {
       if (e.target.value?.length > 0) {
         setVisibleSites(true);
         setShowInstructions(true);
+        setShowVideo(false);
         setOne("one");
         setFour("enter");
         setTwo("Go");
@@ -480,6 +483,7 @@ function App() {
     if (e.keyCode === 27 && !render && hasWhiteSpace(value)) {
       setVisibleSites(false);
       setShowInstructions(false);
+      setShowVideo(true);
       setSites([]);
       setTabs([]);
       setOne("");
@@ -498,6 +502,7 @@ function App() {
     if (e.keyCode === 27 && !render) {
       setVisibleSites(false);
       setShowInstructions(false);
+      setShowVideo(true);
       setSites([]);
       setTabs([]);
       setOne("");
@@ -692,6 +697,11 @@ function App() {
             <></>
           )}
         </div>
+        {showVideo && (
+          <div className="video">
+            <iframe width="100%" height="100%" src="https://www.youtube.com/embed/YRNyamyBOIQ" title="Explanation" />
+          </div>
+        )}
       </Container>
       <div
         title="render"
@@ -736,6 +746,18 @@ const Container = styled.div`
   position: absolute;
   top: 0;
   left: calc(50% - 650px / 2);
+
+  .video {
+    width: 100%;
+    height: 450px;
+    overflow: hidden;
+    border-radius: 10px;
+    border: none;
+
+    iframe {
+      border: none;
+    }
+  }
 
   .logo {
     width: 40px;
