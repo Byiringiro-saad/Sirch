@@ -24,7 +24,7 @@ function Nav({ render }) {
           </div>
           <div className="navigation">
             <p className="link" onClick={handleShowForm}>
-              Download for Chrome
+              Get Sirch Now
             </p>
             <a href="https://meet.google.com/duc-nihh-rot" rel="noreferrer" target="_blank" className="link">
               Support
