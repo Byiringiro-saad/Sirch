@@ -23,9 +23,10 @@ function Nav({ render }) {
             <img src="/logo.png" alt="Sirch" />
           </div>
           <div className="navigation">
-            <p className="link" onClick={handleShowForm}>
+            {/* <p className="link" onClick={handleShowForm}>
               Get Sirch Now
-            </p>
+            </p> */}
+            <form-widget className="form" mode="popup" ucid="MdNMRzyQLBytZECWXyG37aocF3U" />
             <a href="https://meet.google.com/duc-nihh-rot" rel="noreferrer" target="_blank" className="link">
               Support
             </a>
@@ -71,6 +72,14 @@ const Container = styled.div`
     display: flex;
     flex-direction: row;
     align-items: center;
+
+    .form {
+      width: auto;
+      height: 100%;
+
+      padding: 0;
+      display: inline;
+    }
 
     a,
     p {
