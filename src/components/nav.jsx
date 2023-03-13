@@ -23,10 +23,9 @@ function Nav({ render }) {
             <img src="/logo.png" alt="Sirch" />
           </div>
           <div className="navigation">
-            {/* <p className="link" onClick={handleShowForm}>
+            <p className="link" onClick={handleShowForm}>
               Get Sirch Now
-            </p> */}
-            <form-widget className="form" mode="popup" ucid="MdNMRzyQLBytZECWXyG37aocF3U" />
+            </p>
             <a href="https://meet.google.com/duc-nihh-rot" rel="noreferrer" target="_blank" className="link">
               Support
             </a>
