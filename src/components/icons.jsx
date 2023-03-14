@@ -225,6 +225,7 @@ const Container = styled.div`
   flex-direction: row;
   align-items: center;
   box-shadow: ${(props) => (props.visible ? "var(--shadow) 0px 10px 50px" : "none")};
+  opacity: ${(props) => (props.visible ? "10" : "0")};
 
   .selected {
     .gray {
