@@ -14,7 +14,7 @@ import Four from "./instructions/four";
 import Five from "./instructions/five";
 import Three from "./instructions/three";
 
-function Instruction({ one, two, three, four, render, five, six, seven }) {
+function Instruction({ one, two, three, four, render, five, six, seven, eight }) {
   return (
     <Container render={render}>
       <div className="instructions">
@@ -50,7 +50,7 @@ function Instruction({ one, two, three, four, render, five, six, seven }) {
             <BsArrowDown className="icon" />
           </div>
         )}
-        {six === "more" && <Four />}
+        {six === "more" && <Four eight={eight} />}
       </div>
     </Container>
   );

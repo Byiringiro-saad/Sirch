@@ -12,9 +12,8 @@ import React, { useMemo, useState, useEffect } from "react";
 import styled from "styled-components";
 import useLocalStorage from "use-local-storage";
 import { debounce } from "lodash";
-
 // icons
-import { AiOutlineCloseCircle } from "react-icons/ai";
+import { AiOutlineLoading, AiOutlineCloseCircle } from "react-icons/ai";
 import { CopyIcon, CopiedIcon } from "./icons/icons";
 
 // utils
@@ -23,33 +22,45 @@ import { bingAutoSuggest, getBingSearch } from "./action/bingAction";
 import { checkSession, getEmbeddedUrl, loadHyperBeam, renderPage, updateTab } from "./action/hyperBeam";
 
 // portals
-import EmailPortal from "./portals/email";
+// import EmailPortal from "./portals/email";
 
 // components
+import Nav from "./components/nav";
 import Page from "./components/page";
 import Icons from "./components/icons";
+import Footer from "./components/footer";
+import ShortansIcon from "./components/shortansIcon";
 import Command from "./components/command";
 import Suggestion from "./components/suggestion";
 import Instruction from "./components/instruction";
 import ShortAnswer from "./components/shortAnswer";
-import Nav from "./components/nav";
-import Footer from "./components/footer";
+
+// invest
+import One from "./components/invest/one";
+import Two from "./components/invest/two";
+import Three from "./components/invest/three";
 
 function App() {
+  const shortAnswerKey = "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";
+  // const shortAnswerKey = process?.env?.REACT_APP_SHORT_ANS_OPENAI_API_KEY;
   // theme data
-  const defaultDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+  const defaultDark = window?.matchMedia("(prefers-color-scheme: dark)")?.matches;
   const [theme, setTheme] = useLocalStorage("theme", defaultDark ? "dark" : "light");
 
   // local data
   const [showVideo, setShowVideo] = useState(true);
+  const [showInvestOne, setShowInvestOne] = useState(false);
+  const [showInvestTwo, setShowInvestTwo] = useState(false);
+  const [showInvestThree, setShowInvestThree] = useState(false);
   const [tabs, setTabs] = useState([]);
   const [windowId, setWindowId] = useState(null);
   const [data, setData] = useState([]);
   const [value, setValue] = useState("");
+  const [isAnsSelect, setAnswSelect] = useState(false);
+  const [isAnsPressEnt, setIsAnsPressEnt] = useState(false);
   const [backupValue, setBackupValue] = useState("");
   const [sites, setSites] = useState([]);
   const [visibleSites, setVisibleSites] = useState(false);
-  const [suggestions, setSuggestions] = useState([]);
   const [suggestionsActive, setSuggestionsActive] = useState(false);
   const [cursor, setCursor] = useState(0);
   const [render, setRender] = useState(false);
@@ -66,10 +77,107 @@ function App() {
   const [underDomainFilterd, setUnderDomainFilterd] = useState([]);
   const [selectedPage, setSelectedPage] = useState(-1);
   const [spaceClicked, setSpaceClicked] = useState(false);
-  const [showSearch, setShowSearch] = useState(false);
   const [showInstructions, setShowInstructions] = useState(false);
   const [askEmail, setAskEmail] = useState(false);
   const [sitesLoading, setSitesLoading] = useState(false);
+  const flg = ["Answer", "Suggestions", "Commands"];
+  const [ans, setAns] = useState([]);
+  const [allData, setAllData] = useState([]);
+  const [commands] = useState([
+    {
+      id: 1,
+      name: "Clipboard History",
+      icon: CopyIcon,
+      type: "Commands",
+    },
+    {
+      id: 2,
+      name: "Import extension",
+      icon: CopiedIcon,
+      type: "Commands",
+    },
+    {
+      id: 3,
+      name: "Manage extension",
+      icon: CopiedIcon,
+      type: "Commands",
+    },
+  ]);
+
+  const debounceTimeMs = 1000;
+  const fieldRef = React.useRef(null);
+  const [queryResult, setQueryResult] = useState("");
+
+  const [loading, setLoading] = useState(false);
+
+  const notice =
+    "The user will input a search query. Your job is to pretend to be a relevant expert, and to provide an answer in seven words or less. ";
+
+  function getShortAnsResults1() {
+    setLoading(true);
+
+    const requestOptions = {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${shortAnswerKey}`,
+      },
+      body: JSON.stringify({
+        model: "gpt-3.5-turbo",
+        messages: [{ role: "user", content: notice + value }],
+        // maximum_length: 256,
+        // top_p: 1,
+        // frequency_penalty: 0.0,
+        // presence_penalty: 0.0,
+      }),
+    };
+
+    fetch("https://api.openai.com/v1/chat/completions", requestOptions)
+      .then((response) => response.json())
+      .then((data) => {
+        if (data?.choices?.length > 0) {
+          setAns([{ displayText: data?.choices[0]?.message?.content, type: "Answer" }]);
+          // setQueryResult(data?.choices[0]?.message?.content);
+          setLoading(false);
+        } else {
+          setQueryResult("No short answer available.");
+        }
+      });
+  }
+  function getShortAnsResults() {
+    setLoading(true);
+    const requestOptions = {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    };
+
+    fetch(`http://35.188.68.195:9000/get-short-answer?query=${value}&answer_type=short`, requestOptions)
+      .then((response) => response.json())
+      .then((data) => {
+        if (data) {
+          setAns([{ displayText: data?.answer, type: "Answer", ansData: data }]);
+          // setQueryResult(data?.choices[0]?.message?.content);
+          setLoading(false);
+          setSitesLoading(false);
+        } else {
+          setQueryResult("No short answer available.");
+        }
+      });
+  }
+
+  useEffect(() => {
+    const getData = setTimeout(() => {
+      if (value && hasWhiteSpace(value)) {
+        // getShortAnsResults();
+        getShortAnsResults();
+      } else {
+        setQueryResult("");
+      }
+    }, debounceTimeMs);
+    return () => clearTimeout(getData);
+  }, [value]);
 
   // instructions
   const [one, setOne] = useState("");
@@ -79,6 +187,8 @@ function App() {
   const [five, setFive] = useState("");
   const [six, setSix] = useState("");
   const [seven, setSeven] = useState("");
+  const [eight, setEight] = useState("");
+
   const [escape, setEscape] = useState(false);
 
   // hyperbeam
@@ -103,6 +213,28 @@ function App() {
     }
   };
 
+  const closeInvest = () => {
+    setShowInvestOne(false);
+    setShowInvestTwo(false);
+    setShowInvestThree(false);
+  };
+
+  const handleShowInvest = (part) => {
+    if (part === "one") {
+      setShowInvestOne(true);
+      setShowInvestTwo(false);
+      setShowInvestThree(false);
+    } else if (part === "two") {
+      setShowInvestTwo(true);
+      setShowInvestOne(false);
+      setShowInvestThree(false);
+    } else if (part === "three") {
+      setShowInvestThree(true);
+      setShowInvestOne(false);
+      setShowInvestTwo(false);
+    }
+  };
+
   const handleSupabaseDomainCount = async (sites) => {
     const { data, error } = await getSavedDomains();
     if (error) {
@@ -121,24 +253,6 @@ function App() {
       );
     }
   };
-
-  const [commands] = useState([
-    {
-      id: 1,
-      name: "Clipboard History",
-      icon: CopyIcon,
-    },
-    {
-      id: 2,
-      name: "Import extension",
-      icon: CopiedIcon,
-    },
-    {
-      id: 3,
-      name: "Manage extension",
-      icon: CopiedIcon,
-    },
-  ]);
 
   const switchTheme = () => {
     const newTheme = theme === "light" ? "light" : "dark";
@@ -176,6 +290,8 @@ function App() {
         setThree("");
         setSix("");
         setSeven("");
+        setAllData([]);
+        setAns([]);
       }
 
       if (e.target.value?.length > 0) {
@@ -211,6 +327,8 @@ function App() {
         setSuggestionsActive(false);
         setEscape(false);
         setSitesLoading(false);
+        setAllData([]);
+        setAns([]);
       }
 
       if (hasWhiteSpace(e.target.value)) {
@@ -232,7 +350,12 @@ function App() {
 
         // getting suggestions from bing api
         const sug = await bingAutoSuggest(e.target.value);
-        setSuggestions(sug);
+        // setSuggestions(sug);
+        const top5 = sug.slice(0, 5).map((ele) => {
+          Object.assign(ele, { type: "Suggestions" });
+          return ele;
+        });
+        setAllData([...ans, ...top5, ...commands]);
         debounceFn(e.target.value, hb);
       } else {
         companySuggest(value);
@@ -373,24 +496,30 @@ function App() {
   const handleKeyDown = (e) => {
     // For suggestions
     // Down
-    if (e.keyCode === 40 && suggestionsActive && selectedSuggestion === -1) {
+    let downUp = 0;
+    if (e.keyCode === 40 && suggestionsActive && selectedSuggestion <= -1) {
       setBackupValue(value);
-      setValue(suggestions[selectedSuggestion + 1]?.displayText);
-      setSelectedSuggestion(selectedSuggestion + 1);
+      downUp = 0;
+      if (allData[0].type === "Suggestions") {
+        setValue(allData[0]?.displayText);
+      }
+      setSelectedSuggestion(0);
     }
-
     // Down
-    if (e.keyCode === 40 && suggestionsActive && selectedSuggestion >= 0 && selectedSuggestion < 7) {
-      if (selectedSuggestion !== 4 && selectedSuggestion !== 5 && selectedSuggestion !== 6) {
-        setValue(suggestions[selectedSuggestion + 1]?.displayText);
+    if (e.keyCode === 40 && suggestionsActive && selectedSuggestion >= 0 && selectedSuggestion < allData.length - 1) {
+      // console.log("allData[selectedSuggestion + ÷1]", selectedSuggestion, allData[selectedSuggestion + 1].type);
+      downUp = selectedSuggestion + 1;
+      if (allData[selectedSuggestion + 1].type === "Suggestions") {
+        setValue(allData[selectedSuggestion + 1]?.displayText);
       }
       setSelectedSuggestion(selectedSuggestion + 1);
     }
 
     // Up
-    if (e.keyCode === 38 && suggestionsActive && selectedSuggestion > 0) {
-      if (selectedSuggestion !== 5 && selectedSuggestion !== 6 && selectedSuggestion !== 7) {
-        setValue(suggestions[selectedSuggestion - 1]?.displayText);
+    if (e.keyCode === 38 && suggestionsActive) {
+      downUp = selectedSuggestion - 1;
+      if (allData[selectedSuggestion - 1]?.type === "Suggestions") {
+        setValue(allData[selectedSuggestion - 1]?.displayText);
       }
       setSelectedSuggestion(selectedSuggestion - 1);
     }
@@ -403,13 +532,13 @@ function App() {
     }
 
     // Enter
-    if (e.keyCode === 13 && selectedSuggestion > -1 && !render) {
-      const domain = suggestions[selectedSuggestion]?.url.replace("bing.com", "google.com");
+    if (allData[downUp]?.type !== "Answer" && e.keyCode === 13 && selectedSuggestion > -1 && !render) {
+      const domain = allData[selectedSuggestion]?.url.replace("bing.com", "google.com");
       window.open(`${domain}`, "__blank");
     }
 
     // Enter
-    if (e.keyCode === 13 && selectedSuggestion === -1 && !render) {
+    if (allData[downUp]?.type !== "Answer" && e.keyCode === 13 && selectedSuggestion === -1 && !render) {
       const query = value.replace(/\s/g, "+");
       const domain = `https://www.google.com/search?q=${query}`;
       window.open(`${domain}`, "__blank");
@@ -428,7 +557,7 @@ function App() {
     // }
 
     // Down
-    if (e.keyCode === 40 && !underDomain && selectedPage === -1 && !suggestionsActive) {
+    if (e.keyCode === 40 && !underDomain && selectedPage <= -1 && !suggestionsActive) {
       setBackupValue(value);
       setValue("");
       setSelectedPage(0);
@@ -454,13 +583,25 @@ function App() {
     }
 
     // Enter when not in hyperbeam
-    if (e.keyCode === 13 && cursor > -1 && !render) {
+    if (allData[downUp]?.type !== "Answer" && e.keyCode === 13 && cursor > -1 && !render) {
       window.open(`https://${sites[cursor]?.domain}`, "__blank");
     }
 
     // Enter when in hyperbeam
-    if (e.keyCode === 13 && cursor > -1 && render) {
+    if (allData[downUp]?.type !== "Answer" && e.keyCode === 13 && cursor > -1 && render) {
       window.open(`${tabs[hbCursor]?.pendingUrl}`, "__blank");
+    }
+    if (allData[downUp]?.type === "Answer") {
+      // console.log("e.keyCode", e.keyCode);
+      setIsAnsPressEnt(e.keyCode);
+      if (e.keyCode === 39 || e.keyCode === 37) {
+        getShortAnsResults();
+      }
+      setAnswSelect(true);
+      setEight("eight");
+    } else {
+      setEight(false);
+      setAnswSelect(false);
     }
 
     // Right when in hyperbeam
@@ -477,8 +618,14 @@ function App() {
     if (render && e.keyCode === 27) {
       setRender(false);
       setHbCursor(-1);
+      setAllData([]);
+      setAns([]);
     }
-
+    // if ((e.keyCode === 40 || e.keyCode === 38) && allData[selectedSuggestion]?.type === "Answer") {
+    //   setTwo("Bhavesh Test");
+    // } else {
+    //   setTwo("");
+    // }
     // user hits escape but not in hyperbeam
     if (e.keyCode === 27 && !render && hasWhiteSpace(value)) {
       setVisibleSites(false);
@@ -496,6 +643,8 @@ function App() {
       setValue("");
       setEscape(false);
       setSelectedPage(-1);
+      setAllData([]);
+      setAns([]);
     }
 
     // user hits escape but not in hyperbeam
@@ -516,6 +665,8 @@ function App() {
       setEscape(false);
       setUnderDomain(false);
       setSelectedPage(-1);
+      setAllData([]);
+      setAns([]);
     }
   };
 
@@ -554,6 +705,9 @@ function App() {
       }
     };
     run();
+    if (selectedPage > 0) {
+      setSelectedPage(0);
+    }
   }, [underDomain, sites, cursor]);
 
   // reset scrolling
@@ -563,27 +717,69 @@ function App() {
       el.scrollTop = 0;
     }
   }, [selectedPage, selectedSuggestion]);
-
+  const ansDetails = (type, data, index) => {
+    let returnData = "";
+    if (type === "Answer" && data.type === "Answer") {
+      returnData = loading ? (
+        <AiOutlineLoading />
+      ) : (
+        <ShortAnswer query={value} ans={data} selected={selectedSuggestion === index} />
+      );
+    } else if (type === "Suggestions" && data.type === "Suggestions") {
+      returnData = (
+        <Suggestion
+          suggestion={data}
+          key={index}
+          selected={selectedSuggestion === index}
+          handleRenderPage={(query) => handleRenderPage(query)}
+        />
+      );
+    } else if (type === "Commands" && data.type === "Commands") {
+      returnData = (
+        <Command
+          command={data}
+          key={data?.id}
+          selected={suggestionsActive ? selectedSuggestion === index : selectedPage === underDomainData.length + index}
+        />
+      );
+    } else {
+      returnData = null;
+    }
+    return returnData;
+  };
   return (
     <>
-      <Nav render={render} />
+      {showInvestThree && <Three close={closeInvest} />}
+      {showInvestTwo && <Two next={handleShowInvest} close={closeInvest} />}
+      {showInvestOne && <One next={handleShowInvest} close={closeInvest} />}
+      <Nav render={render} buyCash={handleShowInvest} />
       <Container data-theme={theme} instructions={showInstructions} visibleSites={visibleSites}>
-        <Icons
-          loading={sitesLoading}
-          sites={sites}
-          tabs={tabs}
-          data={data}
-          handleRender={(id) => handleTabUpdate(id)}
-          render={render}
-          cursor={cursor}
-          setCursor={(x) => {
-            setCursor(x);
-          }}
-          visibleSites={visibleSites}
-          underDomain={underDomain}
-          hb={hb}
-          updateSupabaseDomainCount={handleSupabaseDomainCount}
-        />
+        {isAnsSelect ? (
+          <ShortansIcon
+            loading={sitesLoading}
+            visibleSites={visibleSites}
+            render={render}
+            data={ans[0]?.ansData}
+            isAnsPressEnt={isAnsPressEnt}
+          />
+        ) : (
+          <Icons
+            loading={sitesLoading}
+            sites={sites}
+            tabs={tabs}
+            data={data}
+            handleRender={(id) => handleTabUpdate(id)}
+            render={render}
+            cursor={cursor}
+            setCursor={(x) => {
+              setCursor(x);
+            }}
+            visibleSites={visibleSites}
+            underDomain={underDomain}
+            hb={hb}
+            updateSupabaseDomainCount={handleSupabaseDomainCount}
+          />
+        )}
 
         <div className="search">
           {!render && (
@@ -626,52 +822,17 @@ function App() {
                     ) : (
                       <></>
                     )}
-                    <div>
-                      <ShortAnswer query={value} />
-                    </div>
-                    {suggestionsActive && (
-                      <div className="section">
-                        <div className="title">
-                          <p>Suggestions</p>
-                        </div>
-                        <div className="content">
-                          {suggestions?.length > 0 ? (
-                            suggestions
-                              .slice(0, 5)
-                              .map((suggestion, index) => (
-                                <Suggestion
-                                  suggestion={suggestion}
-                                  key={index}
-                                  selected={selectedSuggestion === index}
-                                  handleRenderPage={(query) => handleRenderPage(query)}
-                                />
-                              ))
-                          ) : (
-                            <div className="para">
-                              <p>No suggestions</p>
+                    {/* Will show for Answer, Suggestions and Commands */}
+                    {flg?.length > 0
+                      ? flg.map((type, index) => (
+                          <div className="section" key={index}>
+                            <div className="title">
+                              <p>{type}</p>
                             </div>
-                          )}
-                        </div>
-                      </div>
-                    )}
-                    <div className="section">
-                      <div className="title">
-                        <p>Commands</p>
-                      </div>
-                      <div className="content">
-                        {commands.map((command, index) => (
-                          <Command
-                            command={command}
-                            key={command?.id}
-                            selected={
-                              suggestionsActive
-                                ? selectedSuggestion === index + 5
-                                : selectedPage === underDomainData.length + index
-                            }
-                          />
-                        ))}
-                      </div>
-                    </div>
+                            <div className="content">{allData.map((data, index) => ansDetails(type, data, index))}</div>
+                          </div>
+                        ))
+                      : null}
                   </div>
                 </>
               ) : (
@@ -691,6 +852,7 @@ function App() {
                 five={five}
                 six={six}
                 seven={seven}
+                eight={eight}
               />
             </>
           ) : (

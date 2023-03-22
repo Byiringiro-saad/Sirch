@@ -1,13 +1,23 @@
 import React from "react";
 import styled from "styled-components";
 
-import { BsArrowRight } from "react-icons/bs";
+import { BsArrowRight, BsArrowLeft } from "react-icons/bs";
 
-function Four() {
+function Four({ eight }) {
   return (
     <Container>
-      More results
-      <BsArrowRight className="icon" style={{ background: "var(--red)", color: "var(--black)" }} />
+      {eight ? (
+        <>
+          More results
+          <BsArrowRight className="icon" style={{ background: "var(--red)", color: "var(--black)" }} />
+          <BsArrowLeft className="icon" style={{ background: "var(--blue)", color: "var(--black)" }} />
+        </>
+      ) : (
+        <>
+          More results
+          <BsArrowRight className="icon" style={{ background: "var(--red)", color: "var(--black)" }} />
+        </>
+      )}
     </Container>
   );
 }

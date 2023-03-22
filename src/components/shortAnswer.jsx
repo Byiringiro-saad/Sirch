@@ -1,59 +1,72 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
+import styled from "styled-components";
 
-function ShortAnswer({ query }) {
-  const debounceTimeMs = 1000;
-
-  const [queryResult, setQueryResult] = useState("");
-
-  function formatQuery(s) {
-    return `${s}\nA:`;
+function ShortAnswer({ selected, ans }) {
+  const fieldRef = React.useRef(null);
+  if (selected) {
+    fieldRef?.current?.scrollIntoView();
   }
-
-  function getShortAnsResults() {
-    const requestOptions = {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: "Bearer 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",
-      },
-      body: JSON.stringify({
-        model: "text-davinci-002",
-        prompt: formatQuery(query),
-        max_tokens: 100,
-        top_p: 1,
-        frequency_penalty: 0.0,
-        presence_penalty: 0.0,
-        stop: "\n",
-      }),
-    };
-
-    fetch("https://api.openai.com/v1/completions", requestOptions)
-      .then((response) => response.json())
-      .then((data) => {
-        let answer = "";
-        if (data?.choices?.length > 0) {
-          answer = data.choices[0].text;
-        }
-        if (answer) {
-          setQueryResult(answer);
-        } else {
-          setQueryResult("No short answer available.");
-        }
-      });
-  }
-
-  useEffect(() => {
-    const getData = setTimeout(() => {
-      if (query) {
-        getShortAnsResults();
-      } else {
-        setQueryResult("");
-      }
-    }, debounceTimeMs);
-    return () => clearTimeout(getData);
-  }, [query]);
-
-  return <div className="short_ans">{queryResult}</div>;
+  return (
+    <Container selected={selected} ref={fieldRef}>
+      <div className="short_ans">{ans?.displayText}</div>
+    </Container>
+  );
 }
+const Container = styled.div`
+  width: 100%;
+  height: 45px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 10px;
+  margin: 5px 0;
+  border-radius: 10px;
+  background: ${(props) => (props.selected ? "var(--gray)" : "")};
+
+  .left {
+    display: flex;
+    flex-direction: row;
+    width: 60%;
+    height: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+
+    .icon {
+      padding: 5px;
+      margin: 0 10px 0 0;
+      border-radius: 5px;
+      background: var(--icon);
+      cursor: pointer;
+    }
+
+    p {
+      color: var(--text);
+      text-transform: capitalize;
+      cursor: pointer;
+    }
+  }
+
+  .right {
+    display: flex;
+    flex-direction: row;
+    width: 20%;
+    height: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+
+    p {
+      color: var(--white);
+      cursor: pointer;
+    }
+  }
+
+  :hover {
+    background: var(--gray);
+  }
+`;
 
 export default ShortAnswer;
