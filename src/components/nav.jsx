@@ -7,7 +7,7 @@ import React, { useState } from "react";
 // components
 import Form from "./popup/form";
 
-function Nav({ render, buyCash }) {
+function Nav({ render }) {
   const [showForm, setShowForm] = useState(false);
 
   const handleShowForm = () => {
@@ -23,15 +23,16 @@ function Nav({ render, buyCash }) {
             <img src="/logo.png" alt="Sirch" />
           </div>
           <div className="navigation">
-            <p className="link" onClick={handleShowForm}>
+            {/* <p className="link" onClick={handleShowForm}>
               Get Sirch Now
-            </p>
+            </p> */}
+            <form-widget className="form" mode="popup" ucid="MdNMRzyQLBytZECWXyG37aocF3U" />
             <a href="https://meet.google.com/duc-nihh-rot" rel="noreferrer" target="_blank" className="link">
               Support
             </a>
-            <p className="button" onClick={() => buyCash("one")}>
+            <a href="https://sirch.cash/" rel="noreferrer" target="_blank" className="button">
               Buy S Cash
-            </p>
+            </a>
           </div>
         </Container>
       )}
@@ -94,7 +95,7 @@ const Container = styled.div`
       cursor: pointer;
     }
 
-    p.button {
+    a.button {
       padding: 10px 30px;
       color: var(--black);
       border-radius: 5px;

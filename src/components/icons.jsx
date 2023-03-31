@@ -27,6 +27,7 @@ function Icons({
   updateSupabaseDomainCount,
   visibleSites,
   loading,
+  setIndexHyperbeamSlice,
 }) {
   const [currentNav, setCurrentNav] = useState(1);
   const [tabsPerNav] = useState(4);
@@ -109,6 +110,11 @@ function Icons({
       window.removeEventListener("keydown", handleKeyDown);
     };
   });
+
+  React.useEffect(() => {
+    setIndexHyperbeamSlice(indexOfFirstTab);
+    // console.log("indexOfFirstTab", indexOfFirstTab);
+  }, [indexOfFirstTab]);
 
   const getDomain = (url) => {
     const domain = new URL(url).hostname;
@@ -225,7 +231,6 @@ const Container = styled.div`
   flex-direction: row;
   align-items: center;
   box-shadow: ${(props) => (props.visible ? "var(--shadow) 0px 10px 50px" : "none")};
-  opacity: ${(props) => (props.visible ? "10" : "0")};
 
   .selected {
     .gray {

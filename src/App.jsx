@@ -9,9 +9,11 @@
 
 import axios from "axios";
 import React, { useMemo, useState, useEffect } from "react";
+import { Configuration, OpenAIApi } from "openai";
 import styled from "styled-components";
 import useLocalStorage from "use-local-storage";
 import { debounce } from "lodash";
+
 // icons
 import { AiOutlineLoading, AiOutlineCloseCircle } from "react-icons/ai";
 import { CopyIcon, CopiedIcon } from "./icons/icons";
@@ -25,33 +27,31 @@ import { checkSession, getEmbeddedUrl, loadHyperBeam, renderPage, updateTab } fr
 // import EmailPortal from "./portals/email";
 
 // components
-import Nav from "./components/nav";
 import Page from "./components/page";
 import Icons from "./components/icons";
-import Footer from "./components/footer";
 import ShortansIcon from "./components/shortansIcon";
 import Command from "./components/command";
 import Suggestion from "./components/suggestion";
 import Instruction from "./components/instruction";
 import ShortAnswer from "./components/shortAnswer";
+import Nav from "./components/nav";
+import Footer from "./components/footer";
 
-// invest
-import One from "./components/invest/one";
-import Two from "./components/invest/two";
-import Three from "./components/invest/three";
+const configuration = new Configuration({
+  apiKey: "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",
+});
+const openai = new OpenAIApi(configuration);
 
 function App() {
   const shortAnswerKey = "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";
   // const shortAnswerKey = process?.env?.REACT_APP_SHORT_ANS_OPENAI_API_KEY;
+  const HB_TOKEN = "sk_live_5ubtsKTVOxpNNECB_Y7IPhzwtGjoVTlg21pMhbtkMkw";
   // theme data
   const defaultDark = window?.matchMedia("(prefers-color-scheme: dark)")?.matches;
   const [theme, setTheme] = useLocalStorage("theme", defaultDark ? "dark" : "light");
 
   // local data
   const [showVideo, setShowVideo] = useState(true);
-  const [showInvestOne, setShowInvestOne] = useState(false);
-  const [showInvestTwo, setShowInvestTwo] = useState(false);
-  const [showInvestThree, setShowInvestThree] = useState(false);
   const [tabs, setTabs] = useState([]);
   const [windowId, setWindowId] = useState(null);
   const [data, setData] = useState([]);
@@ -81,7 +81,7 @@ function App() {
   const [askEmail, setAskEmail] = useState(false);
   const [sitesLoading, setSitesLoading] = useState(false);
   const flg = ["Answer", "Suggestions", "Commands"];
-  const [ans, setAns] = useState([]);
+  const [ans, setAns] = useState([{ displayText: "", type: "Answer", ansData: "" }]);
   const [allData, setAllData] = useState([]);
   const [commands] = useState([
     {
@@ -103,6 +103,7 @@ function App() {
       type: "Commands",
     },
   ]);
+  const [indexHyperbeamSlice, setIndexHyperbeamSlice] = useState(0);
 
   const debounceTimeMs = 1000;
   const fieldRef = React.useRef(null);
@@ -113,71 +114,33 @@ function App() {
   const notice =
     "The user will input a search query. Your job is to pretend to be a relevant expert, and to provide an answer in seven words or less. ";
 
-  function getShortAnsResults1() {
+  const getShortAnsResults = async (value) => {
     setLoading(true);
-
-    const requestOptions = {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${shortAnswerKey}`,
-      },
-      body: JSON.stringify({
-        model: "gpt-3.5-turbo",
-        messages: [{ role: "user", content: notice + value }],
-        // maximum_length: 256,
-        // top_p: 1,
-        // frequency_penalty: 0.0,
-        // presence_penalty: 0.0,
-      }),
-    };
-
-    fetch("https://api.openai.com/v1/chat/completions", requestOptions)
-      .then((response) => response.json())
-      .then((data) => {
-        if (data?.choices?.length > 0) {
-          setAns([{ displayText: data?.choices[0]?.message?.content, type: "Answer" }]);
-          // setQueryResult(data?.choices[0]?.message?.content);
-          setLoading(false);
-        } else {
-          setQueryResult("No short answer available.");
-        }
+    const data = await axios.post(`https://us-east4-banded-water-377216.cloudfunctions.net/api-chatgpt-shortanswer`, {
+      query: value,
+    });
+    setLoading(false);
+    setSitesLoading(false);
+    return [{ displayText: data?.data?.message?.content, type: "Answer", ansData: data?.data?.message }];
+  };
+  const getSubData = async (value) => {
+    const subData = await axios.post("https://us-east4-banded-water-377216.cloudfunctions.net/api-chatgpt-questions", {
+      query: value,
+    });
+    console.log("isAnsPressEnt", subData?.data);
+    const top5 = [];
+    subData?.data.forEach((ele) => {
+      top5.push({
+        displayText: ele,
+        query: ele,
+        searchKind: "WebSearch",
+        type: "Suggestions",
+        url: "",
       });
-  }
-  function getShortAnsResults() {
-    setLoading(true);
-    const requestOptions = {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    };
-
-    fetch(`http://35.188.68.195:9000/get-short-answer?query=${value}&answer_type=short`, requestOptions)
-      .then((response) => response.json())
-      .then((data) => {
-        if (data) {
-          setAns([{ displayText: data?.answer, type: "Answer", ansData: data }]);
-          // setQueryResult(data?.choices[0]?.message?.content);
-          setLoading(false);
-          setSitesLoading(false);
-        } else {
-          setQueryResult("No short answer available.");
-        }
-      });
-  }
-
-  useEffect(() => {
-    const getData = setTimeout(() => {
-      if (value && hasWhiteSpace(value)) {
-        // getShortAnsResults();
-        getShortAnsResults();
-      } else {
-        setQueryResult("");
-      }
-    }, debounceTimeMs);
-    return () => clearTimeout(getData);
-  }, [value]);
+    });
+    console.log("top5", top5);
+    setAllData([...ans, ...top5, ...commands]);
+  };
 
   // instructions
   const [one, setOne] = useState("");
@@ -210,28 +173,6 @@ function App() {
     if (data) {
       setDomains(data);
       setFetchError(null);
-    }
-  };
-
-  const closeInvest = () => {
-    setShowInvestOne(false);
-    setShowInvestTwo(false);
-    setShowInvestThree(false);
-  };
-
-  const handleShowInvest = (part) => {
-    if (part === "one") {
-      setShowInvestOne(true);
-      setShowInvestTwo(false);
-      setShowInvestThree(false);
-    } else if (part === "two") {
-      setShowInvestTwo(true);
-      setShowInvestOne(false);
-      setShowInvestThree(false);
-    } else if (part === "three") {
-      setShowInvestThree(true);
-      setShowInvestOne(false);
-      setShowInvestTwo(false);
     }
   };
 
@@ -355,8 +296,13 @@ function App() {
           Object.assign(ele, { type: "Suggestions" });
           return ele;
         });
-        setAllData([...ans, ...top5, ...commands]);
-        debounceFn(e.target.value, hb);
+        const ansData = await getShortAnsResults(value);
+        setAns(ansData);
+        setAllData([...ansData, ...top5, ...commands]);
+        // debounceHandleRenderPage(e.target.value, hb);
+        const data = await getBingSearch(value);
+        setData(data);
+        await handleRenderPage(data);
       } else {
         companySuggest(value);
       }
@@ -476,12 +422,17 @@ function App() {
     }
   };
 
-  const handleRenderPage = async (value) => {
-    const data = await getBingSearch(value);
-    setData(data);
+  const setIndexHyperbeamSliceFn = (r) => {
+    // console.log("setIndexHyperbeamSliceFn", r);
+    setIndexHyperbeamSlice(r);
+  };
+
+  const handleRenderPage = async (data) => {
+    // console.log(" indexHyperbeamSlice", indexHyperbeamSlice);
+    // console.log(" renderPage data", data.slice(0, indexHyperbeamSlice + 5));
     let tabs;
     if (hb) {
-      tabs = await renderPage(hb, data, windowId);
+      tabs = await renderPage(hb, data.slice(0, indexHyperbeamSlice + 5), windowId);
       if (tabs.length) {
         setTabs(tabs);
         setSitesLoading(false);
@@ -491,7 +442,13 @@ function App() {
       }
     }
   };
-  const debounceFn = useMemo(() => debounce(handleRenderPage, 1000), [hb]);
+
+  // const debounceHandleRenderPage = useMemo(() => debounce(handleRenderPage, 1000), [hb]);
+
+  useEffect(() => {
+    // console.log("value", value);
+    handleRenderPage(data);
+  }, [indexHyperbeamSlice]);
 
   const handleKeyDown = (e) => {
     // For suggestions
@@ -595,7 +552,10 @@ function App() {
       // console.log("e.keyCode", e.keyCode);
       setIsAnsPressEnt(e.keyCode);
       if (e.keyCode === 39 || e.keyCode === 37) {
-        getShortAnsResults();
+        getShortAnsResults(value);
+      }
+      if (e.keyCode === 13) {
+        getSubData(allData[downUp]?.displayText);
       }
       setAnswSelect(true);
       setEight("eight");
@@ -731,7 +691,7 @@ function App() {
           suggestion={data}
           key={index}
           selected={selectedSuggestion === index}
-          handleRenderPage={(query) => handleRenderPage(query)}
+          // handleRenderPage={(query) => handleRenderPage(query)}
         />
       );
     } else if (type === "Commands" && data.type === "Commands") {
@@ -749,10 +709,7 @@ function App() {
   };
   return (
     <>
-      {showInvestThree && <Three close={closeInvest} />}
-      {showInvestTwo && <Two next={handleShowInvest} close={closeInvest} />}
-      {showInvestOne && <One next={handleShowInvest} close={closeInvest} />}
-      <Nav render={render} buyCash={handleShowInvest} />
+      <Nav render={render} />
       <Container data-theme={theme} instructions={showInstructions} visibleSites={visibleSites}>
         {isAnsSelect ? (
           <ShortansIcon
@@ -778,6 +735,7 @@ function App() {
             underDomain={underDomain}
             hb={hb}
             updateSupabaseDomainCount={handleSupabaseDomainCount}
+            setIndexHyperbeamSlice={setIndexHyperbeamSliceFn}
           />
         )}
 
