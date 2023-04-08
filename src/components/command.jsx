@@ -3,13 +3,13 @@
 import React from "react";
 import styled from "styled-components";
 
-function Command({ command, selected }) {
+function Command({ command, selected, colors }) {
   const fieldRef = React.useRef(null);
   if (selected) {
     fieldRef?.current?.scrollIntoView();
   }
   return (
-    <Container selected={selected} ref={fieldRef}>
+    <Container selected={selected} ref={fieldRef} color={colors?.red}>
       <div className="left">
         <div className="icon">
           <command.icon />
@@ -33,7 +33,7 @@ const Container = styled.div`
   padding: 0 10px;
   margin: 5px 0;
   border-radius: 10px;
-  background: ${(props) => (props.selected ? "var(--gray)" : "")};
+  background: ${(props) => (props.selected ? `${props.color?.gray}` : "")};
 
   .left {
     display: flex;
@@ -48,13 +48,14 @@ const Container = styled.div`
       padding: 5px;
       margin: 0 10px 0 0;
       border-radius: 5px;
-      background: var(--icon);
       cursor: pointer;
-      color: var(--white);
+      color: var(--black);
+      background: var(--white);
+      background: ${(props) => `${props.color?.dark}`};
     }
 
     p {
-      color: var(--text);
+      color: ${(props) => `${props.color?.dark}`};
       text-transform: capitalize;
       cursor: pointer;
     }
@@ -71,13 +72,13 @@ const Container = styled.div`
     justify-content: center;
 
     p {
-      color: var(--text);
+      color: ${(props) => `${props.color?.dark}`};
       cursor: pointer;
     }
   }
 
   :hover {
-    background: var(--gray);
+    background: ${(props) => `${props.color?.gray}`};
   }
 `;
 

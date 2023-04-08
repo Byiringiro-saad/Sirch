@@ -1,3 +1,4 @@
+/* eslint-disable no-nested-ternary */
 /* eslint-disable jsx-a11y/no-autofocus */
 /* eslint-disable jsx-a11y/anchor-is-valid */
 /* eslint-disable react/no-array-index-key */
@@ -27,15 +28,21 @@ import { checkSession, getEmbeddedUrl, loadHyperBeam, renderPage, updateTab } fr
 // import EmailPortal from "./portals/email";
 
 // components
+import Nav from "./components/nav";
 import Page from "./components/page";
 import Icons from "./components/icons";
+import Footer from "./components/footer";
 import ShortansIcon from "./components/shortansIcon";
 import Command from "./components/command";
 import Suggestion from "./components/suggestion";
 import Instruction from "./components/instruction";
 import ShortAnswer from "./components/shortAnswer";
-import Nav from "./components/nav";
-import Footer from "./components/footer";
+
+// invest
+import One from "./components/invest/one";
+import Two from "./components/invest/two";
+import Three from "./components/invest/three";
+import Enter from "./components/popup/enter";
 
 const configuration = new Configuration({
   apiKey: "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",
@@ -51,7 +58,23 @@ function App() {
   const [theme, setTheme] = useLocalStorage("theme", defaultDark ? "dark" : "light");
 
   // local data
+  const colors = {
+    blue: {
+      main: "#183dff",
+      dark: "#343e6f",
+      gray: "#c4ceff",
+    },
+    red: {
+      main: "#ff0909",
+      dark: "#6f3434",
+      gray: "#ffc4c4",
+    },
+  };
   const [showVideo, setShowVideo] = useState(true);
+  const [showEnter, setShowEnter] = useState(false);
+  const [showInvestOne, setShowInvestOne] = useState(false);
+  const [showInvestTwo, setShowInvestTwo] = useState(false);
+  const [showInvestThree, setShowInvestThree] = useState(false);
   const [tabs, setTabs] = useState([]);
   const [windowId, setWindowId] = useState(null);
   const [data, setData] = useState([]);
@@ -127,7 +150,7 @@ function App() {
     const subData = await axios.post("https://us-east4-banded-water-377216.cloudfunctions.net/api-chatgpt-questions", {
       query: value,
     });
-    console.log("isAnsPressEnt", subData?.data);
+    // console.log("isAnsPressEnt", subData?.data);
     const top5 = [];
     subData?.data.forEach((ele) => {
       top5.push({
@@ -138,7 +161,7 @@ function App() {
         url: "",
       });
     });
-    console.log("top5", top5);
+    // console.log("top5", top5);
     setAllData([...ans, ...top5, ...commands]);
   };
 
@@ -173,6 +196,28 @@ function App() {
     if (data) {
       setDomains(data);
       setFetchError(null);
+    }
+  };
+
+  const closeInvest = () => {
+    setShowInvestOne(false);
+    setShowInvestTwo(false);
+    setShowInvestThree(false);
+  };
+
+  const handleShowInvest = (part) => {
+    if (part === "one") {
+      setShowInvestOne(true);
+      setShowInvestTwo(false);
+      setShowInvestThree(false);
+    } else if (part === "two") {
+      setShowInvestTwo(true);
+      setShowInvestOne(false);
+      setShowInvestThree(false);
+    } else if (part === "three") {
+      setShowInvestThree(true);
+      setShowInvestOne(false);
+      setShowInvestTwo(false);
     }
   };
 
@@ -450,6 +495,10 @@ function App() {
     handleRenderPage(data);
   }, [indexHyperbeamSlice]);
 
+  const handleShowEnter = () => {
+    setShowEnter(!showEnter);
+  };
+
   const handleKeyDown = (e) => {
     // For suggestions
     // Down
@@ -462,6 +511,7 @@ function App() {
       }
       setSelectedSuggestion(0);
     }
+
     // Down
     if (e.keyCode === 40 && suggestionsActive && selectedSuggestion >= 0 && selectedSuggestion < allData.length - 1) {
       // console.log("allData[selectedSuggestion + ÷1]", selectedSuggestion, allData[selectedSuggestion + 1].type);
@@ -496,9 +546,10 @@ function App() {
 
     // Enter
     if (allData[downUp]?.type !== "Answer" && e.keyCode === 13 && selectedSuggestion === -1 && !render) {
-      const query = value.replace(/\s/g, "+");
-      const domain = `https://www.google.com/search?q=${query}`;
-      window.open(`${domain}`, "__blank");
+      // const query = value.replace(/\s/g, "+");
+      // const domain = `https://www.google.com/search?q=${query}`;
+      // window.open(`${domain}`, "__blank");
+      setShowEnter(true);
     }
 
     // For pages
@@ -677,8 +728,10 @@ function App() {
       el.scrollTop = 0;
     }
   }, [selectedPage, selectedSuggestion]);
+
   const ansDetails = (type, data, index) => {
     let returnData = "";
+
     if (type === "Answer" && data.type === "Answer") {
       returnData = loading ? (
         <AiOutlineLoading />
@@ -691,6 +744,7 @@ function App() {
           suggestion={data}
           key={index}
           selected={selectedSuggestion === index}
+          colors={selectedSuggestion < 6 && selectedSuggestion > 0 ? colors : {}}
           // handleRenderPage={(query) => handleRenderPage(query)}
         />
       );
@@ -699,6 +753,7 @@ function App() {
         <Command
           command={data}
           key={data?.id}
+          colors={selectedSuggestion > 5 ? colors : {}}
           selected={suggestionsActive ? selectedSuggestion === index : selectedPage === underDomainData.length + index}
         />
       );
@@ -707,9 +762,14 @@ function App() {
     }
     return returnData;
   };
+
   return (
     <>
-      <Nav render={render} />
+      {showInvestThree && <Three close={closeInvest} />}
+      {showInvestTwo && <Two next={handleShowInvest} close={closeInvest} />}
+      {showInvestOne && <One next={handleShowInvest} close={closeInvest} />}
+      {showEnter && <Enter handleShow={handleShowEnter} />}
+      <Nav render={render} buyCash={handleShowInvest} />
       <Container data-theme={theme} instructions={showInstructions} visibleSites={visibleSites}>
         {isAnsSelect ? (
           <ShortansIcon
@@ -785,7 +845,7 @@ function App() {
                       ? flg.map((type, index) => (
                           <div className="section" key={index}>
                             <div className="title">
-                              <p>{type}</p>
+                              <Para type={type}>{type}</Para>
                             </div>
                             <div className="content">{allData.map((data, index) => ansDetails(type, data, index))}</div>
                           </div>
@@ -819,7 +879,12 @@ function App() {
         </div>
         {showVideo && (
           <div className="video">
-            <iframe width="100%" height="100%" src="https://www.youtube.com/embed/YRNyamyBOIQ" title="Explanation" />
+            <iframe
+              width="100%"
+              height="100%"
+              src="https://res.cloudinary.com/f-studios/video/upload/v1680937885/Sirch/Homepage_video_qkykkk.mp4"
+              title="Explanation"
+            />
           </div>
         )}
       </Container>
@@ -855,6 +920,10 @@ function App() {
       });
   }
 }
+
+const Para = styled.p`
+  color: var(--dark);
+`;
 
 const Container = styled.div`
   width: 700px;
@@ -1141,7 +1210,6 @@ const Container = styled.div`
         height: 25px;
 
         p {
-          color: var(--text);
           font-weight: 700;
         }
       }

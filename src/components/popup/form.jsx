@@ -6,7 +6,8 @@ import styled from "styled-components";
 function Form({ handleShow }) {
   return (
     <Container>
-      <form-widget class="form" mode="popup" ucid="MdNMRzyQLBytZECWXyG37aocF3U" />
+      {/* <rewards-widget ucid="2eR0EzMtqQ3xAbOTRN79kEhB818" /> */}
+      <form-widget ucid="2eR0EzMtqQ3xAbOTRN79kEhB818" />
       <div className="background" onClick={() => handleShow()} />
     </Container>
   );

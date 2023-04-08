@@ -4,6 +4,8 @@
   "private": true,
   "dependencies": {
     "@hyperbeam/web": "^0.0.24",
+    "@stripe/react-stripe-js": "^2.1.0",
+    "@stripe/stripe-js": "^1.52.0",
     "@supabase/supabase-js": "^2.1.0",
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.4.0",
