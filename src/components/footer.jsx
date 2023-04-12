@@ -26,8 +26,20 @@ const Footer = ({ render }) => (
           </a>
         </div>
         <div className="right">
-          <p>Terms and Conditions</p>
-          <p>Privacy policy</p>
+          <a
+            href="https://docs.google.com/document/d/1Tsaz-QQhjXIIOJ8uCMxSUA3nVk045FB5w8gX9stloAk/edit?usp=sharing"
+            rel="noreferrer"
+            target="_blank"
+          >
+            Terms and Conditions
+          </a>
+          <a
+            href="https://docs.google.com/document/d/1sUWYpfNbPSQTcbitSbFTiPranwu6NEwBs1uhJLtfggc/edit?usp=sharing"
+            target="_blank"
+            rel="noreferrer"
+          >
+            Privacy policy
+          </a>
           <p>@Copyright 2023 Sirch</p>
         </div>
       </Container>
@@ -71,6 +83,12 @@ const Container = styled.div`
     p {
       color: var(--white);
       margin: 0 0 0 30px;
+    }
+
+    a {
+      color: var(--white);
+      margin: 0 0 0 30px;
+      text-decoration: none;
     }
   }
 `;
