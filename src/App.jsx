@@ -70,7 +70,7 @@ function App() {
       gray: "#ffc4c4",
     },
   };
-  const [showVideo, setShowVideo] = useState(true);
+  const [showVideo, setShowVideo] = useState(false);
   const [showEnter, setShowEnter] = useState(false);
   const [showInvestOne, setShowInvestOne] = useState(false);
   const [showInvestTwo, setShowInvestTwo] = useState(false);
@@ -265,7 +265,7 @@ function App() {
       if (e.target.value?.length === 0) {
         setVisibleSites(false);
         setShowInstructions(false);
-        setShowVideo(true);
+        setShowVideo(false);
         setSitesLoading(false);
         setSites([]);
         setTabs([]);
@@ -641,7 +641,7 @@ function App() {
     if (e.keyCode === 27 && !render && hasWhiteSpace(value)) {
       setVisibleSites(false);
       setShowInstructions(false);
-      setShowVideo(true);
+      setShowVideo(false);
       setSites([]);
       setTabs([]);
       setOne("");
@@ -662,7 +662,7 @@ function App() {
     if (e.keyCode === 27 && !render) {
       setVisibleSites(false);
       setShowInstructions(false);
-      setShowVideo(true);
+      setShowVideo(false);
       setSites([]);
       setTabs([]);
       setOne("");

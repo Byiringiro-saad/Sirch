@@ -58,17 +58,25 @@ const Container = styled.div`
     flex-direction: row;
     border-radius: 10px;
     align-items: center;
-    justify-content: center;
     z-index: 2;
 
     img {
-      width: 50px;
+      width: 55px;
     }
 
     a {
       text-decoration: none;
       margin: 0 0 0 10px;
       color: var(--white);
+      padding: 10px 25px;
+      border-radius: 3px;
+      border: 1px solid var(--white);
+      transition: all 0.3s ease-in-out;
+
+      :hover {
+        background: var(--white);
+        color: var(--black);
+      }
     }
   }
 
@@ -103,9 +111,15 @@ const Container = styled.div`
 
     p.button {
       padding: 10px 30px;
-      color: var(--black);
+      color: var(--white);
       border-radius: 5px;
-      background: var(--white);
+      border: 1px solid var(--white);
+      transition: all 0.3s ease-in-out;
+
+      :hover {
+        background: var(--white);
+        color: var(--black);
+      }
     }
   }
 `;
