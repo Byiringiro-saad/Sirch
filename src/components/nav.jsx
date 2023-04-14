@@ -20,15 +20,15 @@ function Nav({ render, buyCash }) {
       {!render && (
         <Container>
           <div className="logo">
-            <img src="/logo.png" alt="Sirch" />
+            <img src="/logo.jpg" alt="Sirch" />
+            <a href="https://bento.me/sirchit" rel="noreferrer" target="_blank" className="link">
+              About
+            </a>
           </div>
           <div className="navigation">
             <p className="link" onClick={handleShowForm}>
               Get Sirch Now
             </p>
-            <a href="https://meet.google.com/duc-nihh-rot" rel="noreferrer" target="_blank" className="link">
-              Support
-            </a>
             <p className="button" onClick={() => buyCash("one")}>
               Buy S Cash
             </p>
@@ -52,16 +52,23 @@ const Container = styled.div`
   left: 0;
 
   .logo {
-    width: 40px;
+    width: auto;
     height: 40px;
     display: flex;
+    flex-direction: row;
     border-radius: 10px;
     align-items: center;
     justify-content: center;
     z-index: 2;
 
     img {
-      width: 60%;
+      width: 50px;
+    }
+
+    a {
+      text-decoration: none;
+      margin: 0 0 0 10px;
+      color: var(--white);
     }
   }
 

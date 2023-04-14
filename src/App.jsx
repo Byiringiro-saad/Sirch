@@ -893,7 +893,7 @@ function App() {
         id="container"
         style={!render ? { height: "0vh", width: "0vw" } : { height: "100%", width: "100%" }}
       />
-      <Footer render={render} />
+      {/* <Footer render={render} /> */}
     </>
   );
 
