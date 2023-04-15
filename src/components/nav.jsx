@@ -7,7 +7,7 @@ import React, { useState } from "react";
 // components
 import Form from "./popup/form";
 
-function Nav({ render, buyCash }) {
+function Nav({ render }) {
   const [showForm, setShowForm] = useState(false);
 
   const handleShowForm = () => {
@@ -21,17 +21,17 @@ function Nav({ render, buyCash }) {
         <Container>
           <div className="logo">
             <img src="/logo.jpg" alt="Sirch" />
+          </div>
+          <div className="navigation">
             <a href="https://bento.me/sirchit" rel="noreferrer" target="_blank" className="link">
               About
             </a>
-          </div>
-          <div className="navigation">
-            <p className="link" onClick={handleShowForm}>
+            <p className="button" onClick={handleShowForm}>
               Get Sirch Now
             </p>
-            <p className="button" onClick={() => buyCash("one")}>
+            {/* <p className="button" onClick={() => buyCash("one")}>
               Buy S Cash
-            </p>
+            </p> */}
           </div>
         </Container>
       )}
@@ -109,7 +109,7 @@ const Container = styled.div`
       cursor: pointer;
     }
 
-    p.button {
+    .button {
       padding: 10px 30px;
       color: var(--white);
       border-radius: 5px;
