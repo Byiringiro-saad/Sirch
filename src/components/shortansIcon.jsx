@@ -33,7 +33,7 @@ function ShortansIcon({ loading, visibleSites, render, data, isAnsPressEnt }) {
         </div>
       ) : (
         <>
-          {iconNav(0, data?.avatar_img_url, "Name", data?.avatar, true)}
+          {iconNav(0, data?.avatar_img_url, "C-3PO", data?.avatar, true)}
           {isAnsPressEnt === 13 && otherAns?.map((el) => iconNav(0, el.img, el.name, data?.avatar, false))}
         </>
       )}
@@ -44,13 +44,21 @@ function ShortansIcon({ loading, visibleSites, render, data, isAnsPressEnt }) {
       <>
         <div className="selected div" key={index}>
           <div className={first ? "gray" : "blank"}>
-            {logo ? <img src={logo} alt={name} /> : <p>{name?.charAt(0)}</p>}
+            <img src="/user.png" alt={name} />
+            {/* {logo ? <img src={logo} alt={name} /> : <p>{name?.charAt(0)}</p>} */}
           </div>
           <div className="name">
             <p>{name}</p>
           </div>
         </div>
-        {isAnsPressEnt !== 13 && <div className="des">{des}</div>}
+        {/* {isAnsPressEnt !== 13 && <div className="des">{des}</div>} */}
+        {isAnsPressEnt !== 13 && (
+          <div className="des">
+            {`C-3PO is excellent at figuring out what you mean to ask and providing short answers. To get another Answer
+            hit right/left. To see related questions, and to get a preview of what's coming, press Enter and wait a
+            couple secs. To build a plugin for C-3PO email josh@sirch.org`}
+          </div>
+        )}
       </>
     );
   }
@@ -95,7 +103,7 @@ const Container = styled.div`
   }
 
   .div {
-    width: 150px;
+    width: 350px;
     height: 100%;
     display: ${(props) => (props.visible ? "flex" : "none")};
     flex-direction: column;
@@ -135,7 +143,8 @@ const Container = styled.div`
       }
 
       img {
-        width: 50%;
+        width: auto;
+        height: 100%;
         border-radius: 5px;
         object-position: center;
       }

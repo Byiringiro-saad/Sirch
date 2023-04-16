@@ -10,13 +10,12 @@
 
 import axios from "axios";
 import React, { useMemo, useState, useEffect } from "react";
-import { Configuration, OpenAIApi } from "openai";
 import styled from "styled-components";
 import useLocalStorage from "use-local-storage";
-import { debounce } from "lodash";
+// import { debounce } from "lodash";
 
 // icons
-import { AiOutlineLoading, AiOutlineCloseCircle } from "react-icons/ai";
+import { AiOutlineCloseCircle } from "react-icons/ai";
 import { CopyIcon, CopiedIcon } from "./icons/icons";
 
 // utils
@@ -44,15 +43,11 @@ import Two from "./components/invest/two";
 import Three from "./components/invest/three";
 import Enter from "./components/popup/enter";
 
-const configuration = new Configuration({
-  apiKey: "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",
-});
-const openai = new OpenAIApi(configuration);
-
 function App() {
   const shortAnswerKey = "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";
   // const shortAnswerKey = process?.env?.REACT_APP_SHORT_ANS_OPENAI_API_KEY;
   const HB_TOKEN = "sk_live_5ubtsKTVOxpNNECB_Y7IPhzwtGjoVTlg21pMhbtkMkw";
+
   // theme data
   const defaultDark = window?.matchMedia("(prefers-color-scheme: dark)")?.matches;
   const [theme, setTheme] = useLocalStorage("theme", defaultDark ? "dark" : "light");
@@ -104,7 +99,8 @@ function App() {
   const [askEmail, setAskEmail] = useState(false);
   const [sitesLoading, setSitesLoading] = useState(false);
   const flg = ["Answer", "Suggestions"];
-  const [ans, setAns] = useState([{ displayText: "", type: "Answer", ansData: "" }]);
+  const [ans, setAns] = useState([{ displayText: "Generating answer...", type: "Answer", ansData: "" }]);
+
   const [allData, setAllData] = useState([]);
   const [commands] = useState([
     {
@@ -128,7 +124,7 @@ function App() {
   ]);
   const [indexHyperbeamSlice, setIndexHyperbeamSlice] = useState(0);
 
-  const debounceTimeMs = 1000;
+  const debounceTimeMs = 2000;
   const fieldRef = React.useRef(null);
   const [queryResult, setQueryResult] = useState("");
 
@@ -260,7 +256,7 @@ function App() {
 
   const handleChange = async (e) => {
     setValue(e.target.value.toLowerCase());
-
+    setSelectedSuggestion(-1);
     if (!underDomain) {
       if (e.target.value?.length === 0) {
         setVisibleSites(false);
@@ -331,23 +327,29 @@ function App() {
 
         setSitesLoading(true);
 
-        // removing the current icons
-        setSites([]);
+        // timeout staffs
+        clearTimeout();
+        setTimeout(async () => {
+          // removing the current icons
+          setSites([]);
 
-        // getting suggestions from bing api
-        const sug = await bingAutoSuggest(e.target.value);
-        // setSuggestions(sug);
-        const top5 = sug.slice(0, 5).map((ele) => {
-          Object.assign(ele, { type: "Suggestions" });
-          return ele;
-        });
-        const ansData = await getShortAnsResults(value);
-        setAns(ansData);
-        setAllData([...ansData, ...top5, ...commands]);
-        // debounceHandleRenderPage(e.target.value, hb);
-        const data = await getBingSearch(value);
-        setData(data);
-        await handleRenderPage(data);
+          // getting suggestions from bing api
+          const sug = await bingAutoSuggest(e.target.value);
+          // setSuggestions(sug);
+
+          const top5 = sug.slice(0, 5).map((ele) => {
+            Object.assign(ele, { type: "Suggestions" });
+            return ele;
+          });
+
+          const ansData = await getShortAnsResults(value);
+          setAns(ansData);
+          setAllData([...ansData, ...top5, ...commands]);
+          // debounceHandleRenderPage(e.target.value, hb);
+          const data = await getBingSearch(value);
+          setData(data);
+          await handleRenderPage(data);
+        }, 3000);
       } else {
         companySuggest(value);
       }
@@ -599,8 +601,8 @@ function App() {
     if (allData[downUp]?.type !== "Answer" && e.keyCode === 13 && cursor > -1 && render) {
       window.open(`${tabs[hbCursor]?.pendingUrl}`, "__blank");
     }
+
     if (allData[downUp]?.type === "Answer") {
-      // console.log("e.keyCode", e.keyCode);
       setIsAnsPressEnt(e.keyCode);
       if (e.keyCode === 39 || e.keyCode === 37) {
         getShortAnsResults(value);
@@ -608,7 +610,9 @@ function App() {
       if (e.keyCode === 13) {
         getSubData(allData[downUp]?.displayText);
       }
-      setAnswSelect(true);
+      if (e.keyCode === 38 || e.keyCode === 40) {
+        setAnswSelect(true);
+      }
       setEight("eight");
     } else {
       setEight(false);
@@ -734,7 +738,8 @@ function App() {
 
     if (type === "Answer" && data.type === "Answer") {
       returnData = loading ? (
-        <AiOutlineLoading />
+        // <AiOutlineLoading />
+        <p>Generating answer...</p>
       ) : (
         <ShortAnswer query={value} ans={data} selected={selectedSuggestion === index} />
       );

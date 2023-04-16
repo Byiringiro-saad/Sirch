@@ -22,14 +22,14 @@ function Instruction({ one, two, three, four, render, five, six, seven, eight })
         {one === "two" && <Two />}
         {one === "three" && <Three />}
         {one === "five" && <Five />}
-        {one !== "one" && one !== "two" && one !== "three" && one !== "five" && one}
+        {!eight && one !== "one" && one !== "two" && one !== "three" && one !== "five" && one}
       </div>
       <div className="commands">
         <div className="one">
-          <p>{two}</p>
-          {four === "up" && <BsArrowUp className="icon" />}
-          {four === "down" && <BsArrowDown className="icon" />}
-          {four === "enter" && <AiOutlineEnter className="icon" />}
+          <p>{!eight && two}</p>
+          {!eight && four === "up" && <BsArrowUp className="icon" />}
+          {!eight && four === "down" && <BsArrowDown className="icon" />}
+          {!eight && four === "enter" && <AiOutlineEnter className="icon" />}
         </div>
 
         {five === "right" && (
