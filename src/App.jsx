@@ -103,7 +103,7 @@ function App() {
   const [showInstructions, setShowInstructions] = useState(false);
   const [askEmail, setAskEmail] = useState(false);
   const [sitesLoading, setSitesLoading] = useState(false);
-  const flg = ["Answer", "Suggestions", "Commands"];
+  const flg = ["Answer", "Suggestions"];
   const [ans, setAns] = useState([{ displayText: "", type: "Answer", ansData: "" }]);
   const [allData, setAllData] = useState([]);
   const [commands] = useState([
