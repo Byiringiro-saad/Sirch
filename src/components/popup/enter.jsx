@@ -31,6 +31,9 @@ function Enter({ handleShow }) {
           You want to spend your time enjoying content, not trying to figure out which link to click.
         </p>
         <p className="button">Tap the right arrow key a bunch of times, and then Stash (upvote) what you like.</p>
+        <div className="got" onClick={() => handleShow()}>
+          <p>Got it</p>
+        </div>
       </motion.div>
       <div className="background" onClick={() => handleShow()} />
     </Container>
@@ -81,6 +84,15 @@ const Container = styled.div`
     .icon {
       font-size: 7em;
       margin: 0 0 20px 0;
+    }
+
+    .got {
+      padding: 20px 50px;
+      margin: 20px 0 0 0;
+      border-radius: 5px;
+      background: var(--white);
+      color: var(--black);
+      cursor: pointer;
     }
   }
 
