@@ -45,7 +45,7 @@ import Enter from "./components/popup/enter";
 
 function App() {
 
-  // const shortAnswerKey = process?.env?.REACT_APP_SHORT_ANS_OPENAI_API_KEY;
+  const shortAnswerKey = process?.env?.REACT_APP_SHORT_ANS_OPENAI_API_KEY;
 
   // theme data
   const defaultDark = window?.matchMedia("(prefers-color-scheme: dark)")?.matches;
