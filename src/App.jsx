@@ -44,9 +44,6 @@ import Three from "./components/invest/three";
 import Enter from "./components/popup/enter";
 
 function App() {
-
-  const shortAnswerKey = process?.env?.REACT_APP_SHORT_ANS_OPENAI_API_KEY;
-
   // theme data
   const defaultDark = window?.matchMedia("(prefers-color-scheme: dark)")?.matches;
   const [theme, setTheme] = useLocalStorage("theme", defaultDark ? "dark" : "light");
@@ -540,13 +537,17 @@ function App() {
     }
 
     // Enter
-    if (allData[downUp]?.type !== "Answer" && e.keyCode === 13 && selectedSuggestion > -1 && !render) {
+    if (e.keyCode === 13 && selectedSuggestion > 0 && !render) {
       const domain = allData[selectedSuggestion]?.url.replace("bing.com", "google.com");
       window.open(`${domain}`, "__blank");
     }
 
+    if (e.keyCode === 13 && selectedSuggestion === 0 && !render) {
+      console.log("selectedSuggestion");
+    }
+
     // Enter
-    if (allData[downUp]?.type !== "Answer" && e.keyCode === 13 && selectedSuggestion === -1 && !render) {
+    if (e.keyCode === 13 && selectedSuggestion === -1 && !render) {
       // const query = value.replace(/\s/g, "+");
       // const domain = `https://www.google.com/search?q=${query}`;
       // window.open(`${domain}`, "__blank");
