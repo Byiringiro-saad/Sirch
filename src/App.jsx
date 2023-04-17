@@ -44,9 +44,8 @@ import Three from "./components/invest/three";
 import Enter from "./components/popup/enter";
 
 function App() {
-  const shortAnswerKey = "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";
+
   // const shortAnswerKey = process?.env?.REACT_APP_SHORT_ANS_OPENAI_API_KEY;
-  const HB_TOKEN = "sk_live_5ubtsKTVOxpNNECB_Y7IPhzwtGjoVTlg21pMhbtkMkw";
 
   // theme data
   const defaultDark = window?.matchMedia("(prefers-color-scheme: dark)")?.matches;
