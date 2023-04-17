@@ -142,17 +142,6 @@ function App() {
     setSitesLoading(false);
     return [{ displayText: data?.data?.message?.content, type: "Answer", ansData: data?.data?.message }];
   };
-
-  useEffect(() => {
-    const getData = setTimeout(() => {
-      if (value && hasWhiteSpace(value)) {
-        getShortAnsResults();
-      } else {
-        setQueryResult("");
-      }
-    }, debounceTimeMs);
-    return () => clearTimeout(getData);
-  }, [value]);
   const getSubData = async (value) => {
     const subData = await axios.post("https://us-east4-banded-water-377216.cloudfunctions.net/api-chatgpt-questions", {
       query: value,
