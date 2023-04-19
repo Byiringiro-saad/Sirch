@@ -129,7 +129,7 @@ function App() {
   const notice =
     "The user will input a search query. Your job is to pretend to be a relevant expert, and to provide an answer in seven words or less. ";
 
-  const getShortAnsResults = async () => {
+  const getShortAnsResults = async (value) => {
     setLoading(true);
     const data = await axios.post(`https://us-east4-banded-water-377216.cloudfunctions.net/api-chatgpt-shortanswer`, {
       query: value,
@@ -337,8 +337,8 @@ function App() {
             Object.assign(ele, { type: "Suggestions" });
             return ele;
           });
-          // const ansData = await getShortAnsResults(value);
-          // setAns(ansData);
+          const ansData = await getShortAnsResults(value);
+          setAns(ansData);
           setAllData([...ans, ...top5, ...commands]);
           // debounceHandleRenderPage(e.target.value, hb);
           const data = await getBingSearch(value);
