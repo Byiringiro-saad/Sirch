@@ -333,26 +333,18 @@ function App() {
           // getting suggestions from bing api
           const sug = await bingAutoSuggest(e.target.value);
           // setSuggestions(sug);
-
           const top5 = sug.slice(0, 5).map((ele) => {
             Object.assign(ele, { type: "Suggestions" });
             return ele;
           });
-
-        // getting suggestions from bing api
-        const sug = await bingAutoSuggest(e.target.value);
-        // setSuggestions(sug);
-        const top5 = sug.slice(0, 5).map((ele) => {
-          Object.assign(ele, { type: "Suggestions" });
-          return ele;
-        });
-        // const ansData = await getShortAnsResults(value);
-        // setAns(ansData);
-        setAllData([...ans, ...top5, ...commands]);
-        // debounceHandleRenderPage(e.target.value, hb);
-        const data = await getBingSearch(value);
-        setData(data);
-        await handleRenderPage(data);
+          // const ansData = await getShortAnsResults(value);
+          // setAns(ansData);
+          setAllData([...ans, ...top5, ...commands]);
+          // debounceHandleRenderPage(e.target.value, hb);
+          const data = await getBingSearch(value);
+          setData(data);
+          await handleRenderPage(data);
+        }, 2000);
       } else {
         companySuggest(value);
       }
