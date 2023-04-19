@@ -17,7 +17,7 @@ function Suggestion({ suggestion, selected, handleRenderPage, colors }) {
         <p>{suggestion?.displayText}</p>
       </div>
       <div className="right">
-        <p>Google SERP</p>
+        <p>Application</p>
       </div>
     </Container>
   );
