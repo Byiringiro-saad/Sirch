@@ -337,8 +337,8 @@ function App() {
             Object.assign(ele, { type: "Suggestions" });
             return ele;
           });
-          // const ansData = await getShortAnsResults(value);
-          // setAns(ansData);
+          const ansData = await getShortAnsResults(value);
+          setAns(ansData);
           setAllData([...ans, ...top5, ...commands]);
           // debounceHandleRenderPage(e.target.value, hb);
           const data = await getBingSearch(value);
