@@ -136,8 +136,7 @@ function App() {
     });
     setLoading(false);
     setSitesLoading(false);
-    setAns([{ displayText: data?.data?.message?.content, type: "Answer", ansData: data?.data?.message }]);
-    // return [{ displayText: data?.data?.message?.content, type: "Answer", ansData: data?.data?.message }];
+    return [{ displayText: data?.data?.message?.content, type: "Answer", ansData: data?.data?.message }];
   };
   const getSubData = async (value) => {
     const subData = await axios.post("https://us-east4-banded-water-377216.cloudfunctions.net/api-chatgpt-questions", {
@@ -339,12 +338,12 @@ function App() {
           });
           const ansData = await getShortAnsResults(value);
           setAns(ansData);
-          setAllData([...ans, ...top5, ...commands]);
+          setAllData([...ansData, ...top5, ...commands]);
           // debounceHandleRenderPage(e.target.value, hb);
           const data = await getBingSearch(value);
           setData(data);
           await handleRenderPage(data);
-        }, 1000);
+        }, 2000);
       } else {
         companySuggest(value);
       }
@@ -600,7 +599,7 @@ function App() {
     if (allData[downUp]?.type === "Answer") {
       setIsAnsPressEnt(e.keyCode);
       if (e.keyCode === 39 || e.keyCode === 37) {
-        // getShortAnsResults(value);
+        getShortAnsResults(value);
       }
       if (e.keyCode === 13) {
         getSubData(allData[downUp]?.displayText);
