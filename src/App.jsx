@@ -129,14 +129,15 @@ function App() {
   const notice =
     "The user will input a search query. Your job is to pretend to be a relevant expert, and to provide an answer in seven words or less. ";
 
-  const getShortAnsResults = async (value) => {
+  const getShortAnsResults = async () => {
     setLoading(true);
     const data = await axios.post(`https://us-east4-banded-water-377216.cloudfunctions.net/api-chatgpt-shortanswer`, {
       query: value,
     });
     setLoading(false);
     setSitesLoading(false);
-    return [{ displayText: data?.data?.message?.content, type: "Answer", ansData: data?.data?.message }];
+    setAns([{ displayText: data?.data?.message?.content, type: "Answer", ansData: data?.data?.message }]);
+    // return [{ displayText: data?.data?.message?.content, type: "Answer", ansData: data?.data?.message }];
   };
   const getSubData = async (value) => {
     const subData = await axios.post("https://us-east4-banded-water-377216.cloudfunctions.net/api-chatgpt-questions", {
@@ -338,14 +339,20 @@ function App() {
             return ele;
           });
 
-          const ansData = await getShortAnsResults(value);
-          setAns(ansData);
-          setAllData([...ansData, ...top5, ...commands]);
-          // debounceHandleRenderPage(e.target.value, hb);
-          const data = await getBingSearch(value);
-          setData(data);
-          await handleRenderPage(data);
-        }, 2000);
+        // getting suggestions from bing api
+        const sug = await bingAutoSuggest(e.target.value);
+        // setSuggestions(sug);
+        const top5 = sug.slice(0, 5).map((ele) => {
+          Object.assign(ele, { type: "Suggestions" });
+          return ele;
+        });
+        // const ansData = await getShortAnsResults(value);
+        // setAns(ansData);
+        setAllData([...ans, ...top5, ...commands]);
+        // debounceHandleRenderPage(e.target.value, hb);
+        const data = await getBingSearch(value);
+        setData(data);
+        await handleRenderPage(data);
       } else {
         companySuggest(value);
       }
@@ -605,7 +612,7 @@ function App() {
     if (allData[downUp]?.type === "Answer") {
       setIsAnsPressEnt(e.keyCode);
       if (e.keyCode === 39 || e.keyCode === 37) {
-        getShortAnsResults(value);
+        // getShortAnsResults(value);
       }
       if (e.keyCode === 13) {
         getSubData(allData[downUp]?.displayText);
@@ -705,7 +712,6 @@ function App() {
       setSeven("");
     }
   }, [cursor]);
-
   useEffect(() => {
     setOne("Type any character to begin");
   }, []);
