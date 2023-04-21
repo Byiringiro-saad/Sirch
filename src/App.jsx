@@ -12,7 +12,7 @@ import axios from "axios";
 import React, { useMemo, useState, useEffect } from "react";
 import styled from "styled-components";
 import useLocalStorage from "use-local-storage";
-// import { debounce } from "lodash";
+import { debounce } from "lodash";
 
 // icons
 import { AiOutlineCloseCircle } from "react-icons/ai";
@@ -36,6 +36,7 @@ import Command from "./components/command";
 import Suggestion from "./components/suggestion";
 import Instruction from "./components/instruction";
 import ShortAnswer from "./components/shortAnswer";
+import HeadlineData from "./components/headlineData";
 
 // invest
 import One from "./components/invest/one";
@@ -44,6 +45,8 @@ import Three from "./components/invest/three";
 import Enter from "./components/popup/enter";
 
 function App() {
+  // const shortAnswerKey = process?.env?.REACT_APP_SHORT_ANS_OPENAI_API_KEY;
+
   // theme data
   const defaultDark = window?.matchMedia("(prefers-color-scheme: dark)")?.matches;
   const [theme, setTheme] = useLocalStorage("theme", defaultDark ? "dark" : "light");
@@ -94,9 +97,9 @@ function App() {
   const [showInstructions, setShowInstructions] = useState(false);
   const [askEmail, setAskEmail] = useState(false);
   const [sitesLoading, setSitesLoading] = useState(false);
-  const flg = ["Answer", "Suggestions"];
+  const [headlines, setHeadlines] = useState([]);
+  const [flg, setFlg] = useState(["Answer", "Suggestions", "Commands", "Headlines"]);
   const [ans, setAns] = useState([{ displayText: "Generating answer...", type: "Answer", ansData: "" }]);
-
   const [allData, setAllData] = useState([]);
   const [commands] = useState([
     {
@@ -138,11 +141,44 @@ function App() {
     setSitesLoading(false);
     return [{ displayText: data?.data?.message?.content, type: "Answer", ansData: data?.data?.message }];
   };
+
+  const getHeadline = async () => {
+    setLoading(true);
+    const apiData = await axios.get(
+      `https://us-east4-banded-water-377216.cloudfunctions.net/news-api-items?organization=${sites[cursor].domain}`
+    );
+    setHeadlines(apiData?.data);
+    const headline = [];
+    apiData?.data.forEach((ele) => {
+      headline.push({
+        displayText: ele?.Title,
+        query: ele?.Title,
+        searchKind: "WebSearch",
+        type: "Headlines",
+        url: "",
+        ...ele,
+      });
+    });
+    setFlg(["Answer", "Headlines"]);
+    setAllData([...ans, ...headline]);
+  };
+  useEffect(() => {
+    const getData = setTimeout(() => {
+      if (value && hasWhiteSpace(value)) {
+        getShortAnsResults();
+      } else {
+        setQueryResult("");
+      }
+    }, debounceTimeMs);
+    return () => clearTimeout(getData);
+  }, [value]);
+  useEffect(() => {
+    getHeadline();
+  }, [sites, cursor]);
   const getSubData = async (value) => {
     const subData = await axios.post("https://us-east4-banded-water-377216.cloudfunctions.net/api-chatgpt-questions", {
       query: value,
     });
-    // console.log("isAnsPressEnt", subData?.data);
     const top5 = [];
     subData?.data.forEach((ele) => {
       top5.push({
@@ -153,7 +189,6 @@ function App() {
         url: "",
       });
     });
-    // console.log("top5", top5);
     setAllData([...ans, ...top5, ...commands]);
   };
 
@@ -218,7 +253,6 @@ function App() {
     if (error) {
       // setFetchError("Could not fetch the domains");
       // setDomains(null);
-      // console.log(error);
     }
     // all domains count
     if (data) {
@@ -323,27 +357,23 @@ function App() {
 
         setSitesLoading(true);
 
-        // timeout staffs
-        clearTimeout();
-        setTimeout(async () => {
-          // removing the current icons
-          setSites([]);
+        // removing the current icons
+        setSites([]);
 
-          // getting suggestions from bing api
-          const sug = await bingAutoSuggest(e.target.value);
-          // setSuggestions(sug);
-          const top5 = sug.slice(0, 5).map((ele) => {
-            Object.assign(ele, { type: "Suggestions" });
-            return ele;
-          });
-          const ansData = await getShortAnsResults(value);
-          setAns(ansData);
-          setAllData([...ansData, ...top5, ...commands]);
-          // debounceHandleRenderPage(e.target.value, hb);
-          const data = await getBingSearch(value);
-          setData(data);
-          await handleRenderPage(data);
-        }, 2000);
+        // getting suggestions from bing api
+        const sug = await bingAutoSuggest(e.target.value);
+        // setSuggestions(sug);
+        const top5 = sug.slice(0, 5).map((ele) => {
+          Object.assign(ele, { type: "Suggestions" });
+          return ele;
+        });
+        // const ansData = await getShortAnsResults(value);
+        // setAns(ansData);
+        setAllData([...ans, ...top5, ...commands]);
+        // debounceHandleRenderPage(e.target.value, hb);
+        const data = await getBingSearch(value);
+        setData(data);
+        await handleRenderPage(data);
       } else {
         companySuggest(value);
       }
@@ -382,6 +412,12 @@ function App() {
 
     if (hasWhiteSpace(value) && !suggestionsActive && selectedSuggestion === -1) {
       setSpaceClicked(true);
+      setCursor(-1);
+      setSuggestionsActive(true);
+    }
+
+    if (!hasWhiteSpace(value) && !suggestionsActive && selectedSuggestion === -1) {
+      setSpaceClicked(false);
       setCursor(-1);
       setSuggestionsActive(true);
     }
@@ -464,13 +500,10 @@ function App() {
   };
 
   const setIndexHyperbeamSliceFn = (r) => {
-    // console.log("setIndexHyperbeamSliceFn", r);
     setIndexHyperbeamSlice(r);
   };
 
   const handleRenderPage = async (data) => {
-    // console.log(" indexHyperbeamSlice", indexHyperbeamSlice);
-    // console.log(" renderPage data", data.slice(0, indexHyperbeamSlice + 5));
     let tabs;
     if (hb) {
       tabs = await renderPage(hb, data.slice(0, indexHyperbeamSlice + 5), windowId);
@@ -487,7 +520,6 @@ function App() {
   // const debounceHandleRenderPage = useMemo(() => debounce(handleRenderPage, 1000), [hb]);
 
   useEffect(() => {
-    // console.log("value", value);
     handleRenderPage(data);
   }, [indexHyperbeamSlice]);
 
@@ -595,7 +627,6 @@ function App() {
     if (allData[downUp]?.type !== "Answer" && e.keyCode === 13 && cursor > -1 && render) {
       window.open(`${tabs[hbCursor]?.pendingUrl}`, "__blank");
     }
-
     if (allData[downUp]?.type === "Answer") {
       setIsAnsPressEnt(e.keyCode);
       if (e.keyCode === 39 || e.keyCode === 37) {
@@ -611,6 +642,7 @@ function App() {
     } else {
       setEight(false);
       setAnswSelect(false);
+      // console.log("false");
     }
 
     // Right when in hyperbeam
@@ -699,6 +731,7 @@ function App() {
       setSeven("");
     }
   }, [cursor]);
+
   useEffect(() => {
     setOne("Type any character to begin");
   }, []);
@@ -728,7 +761,6 @@ function App() {
 
   const ansDetails = (type, data, index) => {
     let returnData = "";
-
     if (type === "Answer" && data.type === "Answer") {
       returnData = loading ? (
         // <AiOutlineLoading />
@@ -755,6 +787,8 @@ function App() {
           selected={suggestionsActive ? selectedSuggestion === index : selectedPage === underDomainData.length + index}
         />
       );
+    } else if (type === "Headlines" && data.type === "Headlines") {
+      returnData = <HeadlineData key={data.Title} query={value} ans={data} selected={selectedSuggestion === index} />;
     } else {
       returnData = null;
     }
@@ -933,19 +967,16 @@ const Container = styled.div`
   position: absolute;
   top: 0;
   left: calc(50% - 650px / 2);
-
   .video {
     width: 100%;
     height: 450px;
     overflow: hidden;
     border-radius: 10px;
     border: none;
-
     iframe {
       border: none;
     }
   }
-
   .logo {
     width: 40px;
     height: 40px;
@@ -958,32 +989,26 @@ const Container = styled.div`
     left: 10px;
     box-shadow: var(--shadow) 0px 10px 50px;
     z-index: 2;
-
     img {
       width: 60%;
     }
   }
-
   .logo:hover + .menu {
     opacity: 1;
     left: 30px;
   }
-
   .logo:hover ~ .background {
     display: block;
     opacity: 1;
   }
-
   .menu:hover + .background {
     display: block;
     opacity: 1;
   }
-
   .menu:hover {
     opacity: 1;
     left: 30px;
   }
-
   .background {
     width: 100%;
     height: 100%;
@@ -996,7 +1021,6 @@ const Container = styled.div`
     z-index: 1;
     transition: 0.5s ease-in;
   }
-
   .menu {
     width: auto;
     height: auto;
@@ -1011,7 +1035,6 @@ const Container = styled.div`
     opacity: 0;
     z-index: 2;
     transition: 0.5s ease-in;
-
     a {
       line-height: 30px;
       margin: 50px 0 0 0;
@@ -1020,16 +1043,13 @@ const Container = styled.div`
       font-weight: 700;
       color: var(--white);
     }
-
     .red {
       color: var(--red);
     }
-
     a:hover {
       color: var(--red);
     }
   }
-
   .switch {
     display: inline-block;
     width: 60px;
@@ -1039,14 +1059,12 @@ const Container = styled.div`
     right: 10px;
     margin: 0 0 30px 0;
   }
-
   /* Hide default HTML checkbox */
   .switch input {
     opacity: 0;
     width: 0;
     height: 0;
   }
-
   /* The slider */
   .slider {
     position: absolute;
@@ -1059,7 +1077,6 @@ const Container = styled.div`
     -webkit-transition: 0.4s;
     transition: 0.4s;
   }
-
   .slider:before {
     position: absolute;
     content: "";
@@ -1071,30 +1088,24 @@ const Container = styled.div`
     -webkit-transition: 0.4s;
     transition: 0.4s;
   }
-
   input:checked + .slider {
     background-color: var(--shadow);
   }
-
   input:focus + .slider {
     box-shadow: 0 0 1px var(--shadow);
   }
-
   input:checked + .slider:before {
     -webkit-transform: translateX(26px);
     -ms-transform: translateX(26px);
     transform: translateX(26px);
   }
-
   /* Rounded sliders */
   .slider.round {
     border-radius: 34px;
   }
-
   .slider.round:before {
     border-radius: 50%;
   }
-
   .search {
     width: 700px;
     height: auto;
@@ -1105,7 +1116,6 @@ const Container = styled.div`
     flex-direction: column;
     align-items: center;
     margin: 30px 0;
-
     form {
       width: 98%;
       height: 50px;
@@ -1115,13 +1125,11 @@ const Container = styled.div`
       position: relative;
       justify-content: center;
       margin: ${(props) => (props.instructions ? "0 0 10px 0" : "0")};
-
       .icon {
         color: var(--text);
         font-size: 1.5em;
         margin: 10px;
       }
-
       .escape {
         width: 50px;
         height: 30px;
@@ -1134,12 +1142,10 @@ const Container = styled.div`
         border-radius: 5px;
         position: absolute;
         right: 10px;
-
         p {
           margin: -1px 0 0 0;
         }
       }
-
       .underDomain {
         width: 10%;
         height: 100%;
@@ -1147,12 +1153,10 @@ const Container = styled.div`
         align-items: center;
         justify-content: center;
         overflow: hidden;
-
         img {
           width: 50%;
         }
       }
-
       input {
         width: 95%;
         height: 100%;
@@ -1163,7 +1167,6 @@ const Container = styled.div`
         caret-color: var(--red);
       }
     }
-
     .container {
       width: 100%;
       height: 350px;
@@ -1172,29 +1175,24 @@ const Container = styled.div`
       display: flex;
       flex-direction: column;
       align-items: flex-start;
-
       /* width */
       ::-webkit-scrollbar {
         width: 10px;
       }
-
       /* Track */
       ::-webkit-scrollbar-track {
         background: transparent;
       }
-
       /* Handle */
       ::-webkit-scrollbar-thumb {
         background: var(--gray);
         border-radius: 10px;
       }
-
       /* Handle on hover */
       ::-webkit-scrollbar-thumb:hover {
         background: var(--icon);
       }
     }
-
     .section {
       width: 100%;
       height: auto;
@@ -1202,31 +1200,25 @@ const Container = styled.div`
       display: flex;
       flex-direction: column;
       align-items: flex-start;
-
       .title {
         width: 100%;
         height: 25px;
-
         p {
           font-weight: 700;
         }
       }
-
       .content {
         width: 100%;
         display: flex;
         flex-direction: column;
         align-items: center;
-
         > p {
           width: 100%;
           line-height: 25px;
         }
-
         .para {
           width: 100%;
           height: 25px;
-
           p {
             color: var(--text);
             font-weight: 700;
@@ -1236,7 +1228,6 @@ const Container = styled.div`
       }
     }
   }
-
   .landing-animation {
     height: 150px;
     width: 100%;
@@ -1247,9 +1238,7 @@ const Container = styled.div`
     text-align: center;
     font-size: 28px;
   }
-
   /* Sine Wave Animation Effect */
-
   .svg-waves {
     position: absolute;
     bottom: 0;
@@ -1258,18 +1247,15 @@ const Container = styled.div`
     width: 100%;
     height: 180px;
   }
-
   @media (max-width: 767px) {
     .svg-waves {
       height: 80px;
     }
   }
-
   .svg-waves__parallax > use {
     -webkit-animation: move-forever 25s cubic-bezier(0.55, 0.5, 0.45, 0.5) infinite;
     animation: move-forever 25s cubic-bezier(0.55, 0.5, 0.45, 0.5) infinite;
   }
-
   .svg-waves__parallax > use:nth-child(1) {
     -webkit-animation-delay: -2s;
     animation-delay: -2s;
@@ -1278,7 +1264,6 @@ const Container = styled.div`
     fill: #f4f4f4;
     opacity: 0.4;
   }
-
   .svg-waves__parallax > use:nth-child(2) {
     -webkit-animation-delay: -3s;
     animation-delay: -3s;
@@ -1287,7 +1272,6 @@ const Container = styled.div`
     fill: #ededed;
     opacity: 0.4;
   }
-
   .svg-waves__parallax > use:nth-child(3) {
     -webkit-animation-delay: -4s;
     animation-delay: -4s;
@@ -1296,7 +1280,6 @@ const Container = styled.div`
     fill: #f2f2f2;
     opacity: 0.4;
   }
-
   .svg-waves__parallax > use:nth-child(4) {
     -webkit-animation-delay: -5s;
     animation-delay: -5s;
@@ -1305,7 +1288,6 @@ const Container = styled.div`
     fill: #ececec;
     opacity: 0.4;
   }
-
   @-webkit-keyframes move-forever {
     0% {
       transform: translate3d(-90px, 0, 0);
@@ -1314,7 +1296,6 @@ const Container = styled.div`
       transform: translate3d(85px, 0, 0);
     }
   }
-
   @keyframes move-forever {
     0% {
       transform: translate3d(-90px, 0, 0);
