@@ -122,6 +122,7 @@ function App() {
     // "Signup",
   ]);
   const [underDomainFilterd, setUnderDomainFilterd] = useState([]);
+  // console.log("\nunderDomainData", underDomainData, "underDomainFilterd", underDomainFilterd);
   const [selectedPage, setSelectedPage] = useState(-1);
   const [spaceClicked, setSpaceClicked] = useState(false);
   const [showInstructions, setShowInstructions] = useState(false);
@@ -196,7 +197,7 @@ function App() {
       if (value && !hasWhiteSpace(value)) {
         getHeadline();
       }
-    }, debounceTimeMs);
+    }, 200);
     return () => clearTimeout(getData);
   }, [sites, cursor]);
   const getSubData = async (value) => {
@@ -313,10 +314,13 @@ function App() {
     setSelectedSuggestion(-1);
     if (hasWhiteSpace(e.target.value)) {
       dispatch(setAllData([...ans, ...top5Data, ...commands]));
-      dispatch(setFlgData(["Answer", "Suggestions", "Commands"]));
+      dispatch(setFlgData(["Answer", "Suggestions"]));
+      // dispatch(setFlgData(["Answer", "Suggestions", "Commands"]));
     } else {
       // dispatch(setAllData([...ans, ...top5Data, ...commands]));
       // getHeadline();
+
+      // dispatch(setAllData([...ans, ...top5Data, ...commands]));
       dispatch(setFlgData(["Headlines"]));
     }
     if (!underDomain) {
@@ -406,7 +410,7 @@ function App() {
         // dispatch(setAllData([...ans, ...top5, ...commands]));
         // setAllData([...ans, ...top5, ...commands]);
         // debounceHandleRenderPage(e.target.value, hb);
-        const data = await getBingSearch(value);
+        const data = await getBingSearch(e.target.value);
         setData(data);
         await handleRenderPage(data);
       } else {
@@ -573,7 +577,6 @@ function App() {
   const handleShowEnter = () => {
     setShowEnter(!showEnter);
   };
-  console.log("\nallData", allData);
   const handleKeyDown = (e) => {
     // For suggestions
     // Down
@@ -581,7 +584,7 @@ function App() {
     if (e.keyCode === 40 && suggestionsActive && selectedSuggestion <= -1) {
       setBackupValue(value);
       downUp = 0;
-      if (allData[0].type === "Suggestions") {
+      if (allData[0]?.type === "Suggestions") {
         setValue(allData[0]?.displayText);
       }
       setSelectedSuggestion(0);
@@ -626,7 +629,6 @@ function App() {
       !render
     ) {
       const domain = allData[selectedSuggestion]?.url?.replace("bing.com", "google.com");
-      console.log("\ndomain", domain);
       window.open(`${domain}`, "__blank");
     }
 
@@ -651,13 +653,13 @@ function App() {
 
     // For pages
     // Found
-    // if (value?.length > 2 && !underDomain && selectedPage === -1 && !suggestionsActive) {
-    //   setUnderDomain(true);
-    // }
+    if (value?.length > 2 && !underDomain && selectedPage === -1 && !suggestionsActive) {
+      setUnderDomain(true);
+    }
 
-    // if (value?.length <= 2) {
-    //   // setUnderDomain(false);
-    // }
+    if (value?.length <= 2) {
+      setUnderDomain(false);
+    }
 
     // Down
     if (e.keyCode === 40 && !underDomain && selectedPage <= -1 && !suggestionsActive) {
@@ -668,7 +670,7 @@ function App() {
     }
 
     // Down
-    if (e.keyCode === 40 && underDomain && selectedPage >= 0 && selectedPage <= underDomainData.length + 1) {
+    if (e.keyCode === 40 && underDomain && selectedPage >= -1 && selectedPage <= underDomainData.length + 1) {
       setSelectedPage(selectedPage + 1);
     }
 
@@ -701,7 +703,6 @@ function App() {
       }
       if (e.keyCode === 13) {
         getSubData(allData[downUpEnter]?.displayText);
-        // getSubData(allData[downUp]?.displayText);
       }
       if (e.keyCode === 38 || e.keyCode === 40) {
         setAnswSelect(true);
@@ -849,14 +850,14 @@ function App() {
         />
       );
     } else if (type === "Commands" && data.type === "Commands") {
-      returnData = (
-        <Command
-          command={data}
-          key={data?.id}
-          colors={selectedSuggestion > 5 ? colors : {}}
-          selected={suggestionsActive ? selectedSuggestion === index : selectedPage === underDomainData.length + index}
-        />
-      );
+      // returnData = (
+      //   <Command
+      //     command={data}
+      //     key={data?.id}
+      //     colors={selectedSuggestion > 5 ? colors : {}}
+      //     selected={suggestionsActive ? selectedSuggestion === index : selectedPage === underDomainData.length + index}
+      //   />
+      // );
     } else if (type === "Headlines" && data.type === "Headlines") {
       returnData = <HeadlineData key={data.Title} query={value} ans={data} selected={selectedSuggestion === index} />;
     } else {
@@ -864,6 +865,9 @@ function App() {
     }
     return returnData;
   };
+  // console.log("\nall", allData);
+  // console.log("\nselectedPage", selectedPage, "selectedSuggestion", selectedSuggestion);
+
   return (
     <>
       {showInvestThree && <Three close={closeInvest} />}
@@ -904,43 +908,50 @@ function App() {
           {!render && (
             <>
               <form className="input" onSubmit={handleSubmit}>
-                {/* {underDomain && sites?.length > 0 ? (
+                {underDomain && sites?.length > 0 ? (
                   <div className="underDomain">
                     <img src={sites[cursor]?.logo} alt={sites[cursor]?.name} />
                   </div>
                 ) : (
                   <></>
                   // <BiSearch className="icon" />
-                )} */}
+                )}
                 {escape && (
                   <div className="escape">
                     <AiOutlineCloseCircle />
                     <p>esc</p>
                   </div>
                 )}
-                <input type="text" value={value} onKeyDown={handleKeyPressed} onChange={handleChange} autoFocus />
+                <input
+                  type="text"
+                  value={value}
+                  onKeyDown={handleKeyPressed}
+                  onChange={handleChange}
+                  autoFocus
+                  placeholder={`Type "nyt" to see what happens`}
+                />
               </form>
               {visibleSites ? (
                 <>
                   <div className="container" id="search-lines">
-                    {/* {underDomainFilterd?.length > 0 || underDomainData?.length > 0 ? (
+                    {underDomainFilterd?.length > 0 || underDomainData?.length > 0 ? (
                       <div className="section">
                         <div className="title">
                           <p>Found</p>
                         </div>
                         <div className="content">
-                          {underDomainFilterd.length > 0
-                            ? underDomainFilterd.map((site, index) => (
+                          {underDomainFilterd?.length > 0
+                            ? underDomainFilterd?.map((site, index) => (
                                 <Page page={site} selected={selectedPage === index} />
                               ))
-                            : underDomainData.map((page, index) => (
+                            : underDomainData?.map((page, index) => (
                                 <Page page={page} selected={selectedPage === index} />
                               ))}
                         </div>
                       </div>
                     ) : (
                       <></>
-                    )} */}
+                    )}
                     {/* Will show for Answer, Suggestions and Commands */}
                     {flg?.length > 0
                       ? flg.map((type, index) => (
@@ -948,7 +959,13 @@ function App() {
                             <div className="title">
                               <Para type={type}>{type}</Para>
                             </div>
-                            <div className="content">{allData.map((data, index) => ansDetails(type, data, index))}</div>
+                            <div className="content">
+                              {allData.length ? (
+                                allData.map((data, index) => ansDetails(type, data, index))
+                              ) : (
+                                <p>No data Found</p>
+                              )}
+                            </div>
                           </div>
                         ))
                       : null}

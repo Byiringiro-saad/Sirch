@@ -1,12 +1,13 @@
 import React from "react";
 import styled from "styled-components";
 
-import { BsArrowUp } from "react-icons/bs";
+// import { BsArrowUp } from "react-icons/bs";
 
 function Three() {
   return (
     <Container>
-      Press the <BsArrowUp className="icon" /> to upvote
+      {/* Press the <BsArrowUp className="icon" /> to upvote */}
+      <p className="red_back"> Tap the right arrow key for results</p>
     </Container>
   );
 }
@@ -26,6 +27,15 @@ const Container = styled.p`
     font-size: 2em;
     border-radius: 2px;
     margin: 0 10px;
+  }
+
+  .red_back {
+    background: red;
+    color: #fff;
+    padding: 5px;
+    font-size: 1.2em;
+    border-radius: 5px;
+    margin: 0px;
   }
 `;
 

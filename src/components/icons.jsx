@@ -38,7 +38,6 @@ function Icons({
   const currentBingRecord = tabs?.slice(indexOfFirstTab, indexOfLastTab);
   const nNavsForDomain = Math.ceil(sites?.length / tabsPerNav);
   const nNavsForBing = Math.ceil(tabs?.length / tabsPerNav);
-  console.log("\ncurrentBingRecord", currentBingRecord, "currentDomainRecord", currentDomainRecord);
   const nextNav = () => {
     if (currentNav !== nNavsForBing) {
       setCurrentNav(currentNav + 1);
@@ -212,7 +211,25 @@ function Icons({
         key={index}
       >
         <div className={count && count > 0 ? "num" : ""}>{count && count > 0 ? count : ""}</div>
-        <div className="gray">{logo ? <img src={logo} alt={name} /> : <p>{name?.charAt(0)}</p>}</div>
+        <div className="gray">
+          {logo ? (
+            <>
+              <img
+                src={logo}
+                alt=""
+                onError={(e) => {
+                  e.target.style.display = "none";
+                  document.getElementById(`alt-text-${index}`).style.display = "block";
+                }}
+              />
+              <div id={`alt-text-${index}`} style={{ display: "none" }}>
+                <p>{hostname(domain)?.charAt(0)}</p>
+              </div>
+            </>
+          ) : (
+            <p>{name?.charAt(0)}</p>
+          )}
+        </div>
         <div className="name">
           <p>{hostname(domain)}</p>
         </div>
