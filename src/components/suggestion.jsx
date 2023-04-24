@@ -12,7 +12,7 @@ function Suggestion({ suggestion, selected, handleRenderPage, colors }) {
   }
   return (
     <Container selected={selected} ref={fieldRef} color={colors?.blue}>
-      <div className="left" onClick={() => handleRenderPage(suggestion.query)}>
+      <div className="left" onClick={() => handleRenderPage(suggestion.url)}>
         <div className="icon">{/* <suggestion.icon /> */}</div>
         <p>{suggestion?.displayText}</p>
       </div>

@@ -38,7 +38,7 @@ function Icons({
   const currentBingRecord = tabs?.slice(indexOfFirstTab, indexOfLastTab);
   const nNavsForDomain = Math.ceil(sites?.length / tabsPerNav);
   const nNavsForBing = Math.ceil(tabs?.length / tabsPerNav);
-
+  console.log("\ncurrentBingRecord", currentBingRecord, "currentDomainRecord", currentDomainRecord);
   const nextNav = () => {
     if (currentNav !== nNavsForBing) {
       setCurrentNav(currentNav + 1);

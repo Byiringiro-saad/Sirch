@@ -52,6 +52,7 @@ function App() {
   const flg = useSelector((state) => state.allDetailsReducer.flgData);
   const top5Data = useSelector((state) => state.allDetailsReducer.top5Data);
   const allData = useSelector((state) => state.allDetailsReducer.allData);
+
   const [commands] = useState([
     {
       id: 1,
@@ -127,6 +128,9 @@ function App() {
   const [askEmail, setAskEmail] = useState(false);
   const [sitesLoading, setSitesLoading] = useState(false);
   const [headlines, setHeadlines] = useState([]);
+  const [downUpEnter, setDownUpEnter] = useState(0);
+  const [pressEcs, setPressEcs] = useState(0);
+
   // const [flg, setFlg] = useState(["Answer", "Suggestions", "Commands", "Headlines"]);
 
   const [indexHyperbeamSlice, setIndexHyperbeamSlice] = useState(0);
@@ -186,7 +190,7 @@ function App() {
       }
     }, debounceTimeMs);
     return () => clearTimeout(getData);
-  }, [value]);
+  }, [value, pressEcs]);
   useEffect(() => {
     const getData = setTimeout(() => {
       if (value && !hasWhiteSpace(value)) {
@@ -304,7 +308,6 @@ function App() {
     e.preventDefault();
     setAskEmail(!askEmail);
   };
-
   const handleChange = async (e) => {
     setValue(e.target.value.toLowerCase());
     setSelectedSuggestion(-1);
@@ -377,6 +380,9 @@ function App() {
       }
 
       if (hasWhiteSpace(e.target.value)) {
+        // getting suggestions from bing api
+        callSuggestion();
+
         // changing the instructions
         setTwo("Google SERP");
         setThree("");
@@ -393,16 +399,10 @@ function App() {
         // removing the current icons
         setSites([]);
 
-        // getting suggestions from bing api
-        const sug = await bingAutoSuggest(e.target.value);
         // setSuggestions(sug);
-        const top5 = sug.slice(0, 5).map((ele) => {
-          Object.assign(ele, { type: "Suggestions" });
-          return ele;
-        });
+
         // const ansData = await getShortAnsResults(value);
         // setAns(ansData);
-        dispatch(setTop5Data(top5));
         // dispatch(setAllData([...ans, ...top5, ...commands]));
         // setAllData([...ans, ...top5, ...commands]);
         // debounceHandleRenderPage(e.target.value, hb);
@@ -410,10 +410,22 @@ function App() {
         setData(data);
         await handleRenderPage(data);
       } else {
-        companySuggest(value);
+        companySuggest(e.target.value);
       }
     }
   };
+
+  const callSuggestion = async () => {
+    const sug = await bingAutoSuggest(value);
+    const top5 = sug.slice(0, 5).map((ele) => {
+      Object.assign(ele, { type: "Suggestions" });
+      return ele;
+    });
+    dispatch(setTop5Data(top5));
+  };
+  useEffect(() => {
+    callSuggestion();
+  }, [value]);
 
   // Found useEffect
 
@@ -561,7 +573,7 @@ function App() {
   const handleShowEnter = () => {
     setShowEnter(!showEnter);
   };
-
+  console.log("\nallData", allData);
   const handleKeyDown = (e) => {
     // For suggestions
     // Down
@@ -578,6 +590,7 @@ function App() {
     // Down
     if (e.keyCode === 40 && suggestionsActive && selectedSuggestion >= 0 && selectedSuggestion < allData.length - 1) {
       downUp = selectedSuggestion + 1;
+      setDownUpEnter(selectedSuggestion + 1);
       if (allData[selectedSuggestion + 1].type === "Suggestions") {
         setValue(allData[selectedSuggestion + 1]?.displayText);
       }
@@ -587,6 +600,8 @@ function App() {
     // Up
     if (e.keyCode === 38 && suggestionsActive) {
       downUp = selectedSuggestion - 1;
+      setDownUpEnter(selectedSuggestion - 1);
+
       if (allData[selectedSuggestion - 1]?.type === "Suggestions") {
         setValue(allData[selectedSuggestion - 1]?.displayText);
       }
@@ -604,12 +619,14 @@ function App() {
     // if (e.keyCode === 13 && selectedSuggestion > 0 && !render) {
     if (
       hasWhiteSpace(value) &&
-      allData[downUp]?.type !== "Answer" &&
+      // allData[downUp]?.type !== "Answer" &&
+      allData[downUpEnter]?.type !== "Answer" &&
       e.keyCode === 13 &&
       selectedSuggestion > -1 &&
       !render
     ) {
-      const domain = allData[selectedSuggestion]?.url.replace("bing.com", "google.com");
+      const domain = allData[selectedSuggestion]?.url?.replace("bing.com", "google.com");
+      console.log("\ndomain", domain);
       window.open(`${domain}`, "__blank");
     }
 
@@ -683,7 +700,8 @@ function App() {
         getShortAnsResults(value);
       }
       if (e.keyCode === 13) {
-        getSubData(allData[downUp]?.displayText);
+        getSubData(allData[downUpEnter]?.displayText);
+        // getSubData(allData[downUp]?.displayText);
       }
       if (e.keyCode === 38 || e.keyCode === 40) {
         setAnswSelect(true);
@@ -709,6 +727,7 @@ function App() {
       setRender(false);
       setHbCursor(-1);
       dispatch(setAllData([]));
+      setPressEcs(pressEcs + 1);
       // setAllData([]);
       // setAns([]);
       // dispatch(setAnswerData([{ displayText: "Generating answer...", type: "Answer", ansData: "" }]));
@@ -826,6 +845,7 @@ function App() {
           selected={selectedSuggestion === index}
           colors={selectedSuggestion < 6 && selectedSuggestion > 0 ? colors : {}}
           // handleRenderPage={(query) => handleRenderPage(query)}
+          handleRenderPage={handleRenderPage}
         />
       );
     } else if (type === "Commands" && data.type === "Commands") {
@@ -844,7 +864,6 @@ function App() {
     }
     return returnData;
   };
-
   return (
     <>
       {showInvestThree && <Three close={closeInvest} />}
