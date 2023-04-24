@@ -13,7 +13,7 @@ import React, { useMemo, useState, useEffect } from "react";
 import styled from "styled-components";
 import useLocalStorage from "use-local-storage";
 import { debounce } from "lodash";
-
+import { useDispatch, useSelector } from "react-redux";
 // icons
 import { AiOutlineCloseCircle } from "react-icons/ai";
 import { CopyIcon, CopiedIcon } from "./icons/icons";
@@ -44,8 +44,37 @@ import Two from "./components/invest/two";
 import Three from "./components/invest/three";
 import Enter from "./components/popup/enter";
 
+import { setFlgData, setAnswerData, setAllData, setTop5Data } from "./redux/allDetailsSlice";
+
 function App() {
-  // const shortAnswerKey = process?.env?.REACT_APP_SHORT_ANS_OPENAI_API_KEY;
+  const dispatch = useDispatch();
+  const ans = useSelector((state) => state.allDetailsReducer.answersData);
+  const flg = useSelector((state) => state.allDetailsReducer.flgData);
+  const top5Data = useSelector((state) => state.allDetailsReducer.top5Data);
+  const allData = useSelector((state) => state.allDetailsReducer.allData);
+  const [commands] = useState([
+    {
+      id: 1,
+      name: "Clipboard History",
+      icon: CopyIcon,
+      type: "Commands",
+    },
+    {
+      id: 2,
+      name: "Import extension",
+      icon: CopiedIcon,
+      type: "Commands",
+    },
+    {
+      id: 3,
+      name: "Manage extension",
+      icon: CopiedIcon,
+      type: "Commands",
+    },
+  ]);
+  // useState(() => {
+  //   dispatch(setAllData([...ans, ...top5Data, ...commands]));
+  // }, [ans, top5Data]);
 
   // theme data
   const defaultDark = window?.matchMedia("(prefers-color-scheme: dark)")?.matches;
@@ -98,29 +127,8 @@ function App() {
   const [askEmail, setAskEmail] = useState(false);
   const [sitesLoading, setSitesLoading] = useState(false);
   const [headlines, setHeadlines] = useState([]);
-  const [flg, setFlg] = useState(["Answer", "Suggestions", "Commands", "Headlines"]);
-  const [ans, setAns] = useState([{ displayText: "Generating answer...", type: "Answer", ansData: "" }]);
-  const [allData, setAllData] = useState([]);
-  const [commands] = useState([
-    {
-      id: 1,
-      name: "Clipboard History",
-      icon: CopyIcon,
-      type: "Commands",
-    },
-    {
-      id: 2,
-      name: "Import extension",
-      icon: CopiedIcon,
-      type: "Commands",
-    },
-    {
-      id: 3,
-      name: "Manage extension",
-      icon: CopiedIcon,
-      type: "Commands",
-    },
-  ]);
+  // const [flg, setFlg] = useState(["Answer", "Suggestions", "Commands", "Headlines"]);
+
   const [indexHyperbeamSlice, setIndexHyperbeamSlice] = useState(0);
 
   const debounceTimeMs = 2000;
@@ -132,35 +140,42 @@ function App() {
   const notice =
     "The user will input a search query. Your job is to pretend to be a relevant expert, and to provide an answer in seven words or less. ";
 
-  const getShortAnsResults = async (value) => {
-    setLoading(true);
+  const getShortAnsResults = async () => {
     const data = await axios.post(`https://us-east4-banded-water-377216.cloudfunctions.net/api-chatgpt-shortanswer`, {
       query: value,
     });
-    setLoading(false);
     setSitesLoading(false);
-    return [{ displayText: data?.data?.message?.content, type: "Answer", ansData: data?.data?.message }];
+    dispatch(
+      setAnswerData([{ displayText: data?.data?.message?.content, type: "Answer", ansData: data?.data?.message }])
+    );
+    dispatch(
+      setAllData([
+        ...[{ displayText: data?.data?.message?.content, type: "Answer", ansData: data?.data?.message }],
+        ...top5Data,
+        ...commands,
+      ])
+    );
   };
 
   const getHeadline = async () => {
-    setLoading(true);
-    const apiData = await axios.get(
-      `https://us-east4-banded-water-377216.cloudfunctions.net/news-api-items?organization=${sites[cursor].domain}`
-    );
-    setHeadlines(apiData?.data);
-    const headline = [];
-    apiData?.data.forEach((ele) => {
-      headline.push({
-        displayText: ele?.Title,
-        query: ele?.Title,
-        searchKind: "WebSearch",
-        type: "Headlines",
-        url: "",
-        ...ele,
+    if (sites?.[cursor]?.domain) {
+      const apiData = await axios.get(
+        `https://us-east4-banded-water-377216.cloudfunctions.net/news-api-items?organization=${sites?.[cursor]?.domain}`
+      );
+      setHeadlines(apiData?.data);
+      const headline = [];
+      apiData?.data.forEach((ele) => {
+        headline.push({
+          displayText: ele?.Title,
+          query: ele?.Title,
+          searchKind: "WebSearch",
+          type: "Headlines",
+          url: "",
+          ...ele,
+        });
       });
-    });
-    setFlg(["Answer", "Headlines"]);
-    setAllData([...ans, ...headline]);
+      dispatch(setAllData([...headline]));
+    }
   };
   useEffect(() => {
     const getData = setTimeout(() => {
@@ -173,7 +188,12 @@ function App() {
     return () => clearTimeout(getData);
   }, [value]);
   useEffect(() => {
-    getHeadline();
+    const getData = setTimeout(() => {
+      if (value && !hasWhiteSpace(value)) {
+        getHeadline();
+      }
+    }, debounceTimeMs);
+    return () => clearTimeout(getData);
   }, [sites, cursor]);
   const getSubData = async (value) => {
     const subData = await axios.post("https://us-east4-banded-water-377216.cloudfunctions.net/api-chatgpt-questions", {
@@ -189,7 +209,8 @@ function App() {
         url: "",
       });
     });
-    setAllData([...ans, ...top5, ...commands]);
+    dispatch(setTop5Data(top5));
+    // dispatch(setAllData([...ans, ...top5, ...commands]));
   };
 
   // instructions
@@ -287,6 +308,14 @@ function App() {
   const handleChange = async (e) => {
     setValue(e.target.value.toLowerCase());
     setSelectedSuggestion(-1);
+    if (hasWhiteSpace(e.target.value)) {
+      dispatch(setAllData([...ans, ...top5Data, ...commands]));
+      dispatch(setFlgData(["Answer", "Suggestions", "Commands"]));
+    } else {
+      // dispatch(setAllData([...ans, ...top5Data, ...commands]));
+      // getHeadline();
+      dispatch(setFlgData(["Headlines"]));
+    }
     if (!underDomain) {
       if (e.target.value?.length === 0) {
         setVisibleSites(false);
@@ -302,8 +331,10 @@ function App() {
         setThree("");
         setSix("");
         setSeven("");
-        setAllData([]);
-        setAns([]);
+        dispatch(setAllData([]));
+        // setAllData([]);
+        // setAns([]);
+        // dispatch(setAnswerData([{ displayText: "Generating answer...", type: "Answer", ansData: "" }]));
       }
 
       if (e.target.value?.length > 0) {
@@ -339,8 +370,10 @@ function App() {
         setSuggestionsActive(false);
         setEscape(false);
         setSitesLoading(false);
-        setAllData([]);
-        setAns([]);
+        dispatch(setAllData([]));
+        // setAllData([]);
+        // setAns([]);
+        // dispatch(setAnswerData([{ displayText: "Generating answer...", type: "Answer", ansData: "" }]));
       }
 
       if (hasWhiteSpace(e.target.value)) {
@@ -369,7 +402,9 @@ function App() {
         });
         // const ansData = await getShortAnsResults(value);
         // setAns(ansData);
-        setAllData([...ans, ...top5, ...commands]);
+        dispatch(setTop5Data(top5));
+        // dispatch(setAllData([...ans, ...top5, ...commands]));
+        // setAllData([...ans, ...top5, ...commands]);
         // debounceHandleRenderPage(e.target.value, hb);
         const data = await getBingSearch(value);
         setData(data);
@@ -416,7 +451,7 @@ function App() {
       setSuggestionsActive(true);
     }
 
-    if (!hasWhiteSpace(value) && !suggestionsActive && selectedSuggestion === -1) {
+    if (!hasWhiteSpace(value)) {
       setSpaceClicked(false);
       setCursor(-1);
       setSuggestionsActive(true);
@@ -542,7 +577,6 @@ function App() {
 
     // Down
     if (e.keyCode === 40 && suggestionsActive && selectedSuggestion >= 0 && selectedSuggestion < allData.length - 1) {
-      // console.log("allData[selectedSuggestion + ÷1]", selectedSuggestion, allData[selectedSuggestion + 1].type);
       downUp = selectedSuggestion + 1;
       if (allData[selectedSuggestion + 1].type === "Suggestions") {
         setValue(allData[selectedSuggestion + 1]?.displayText);
@@ -567,13 +601,31 @@ function App() {
     }
 
     // Enter
-    if (allData[downUp]?.type !== "Answer" && e.keyCode === 13 && selectedSuggestion > -1 && !render) {
+    // if (e.keyCode === 13 && selectedSuggestion > 0 && !render) {
+    if (
+      hasWhiteSpace(value) &&
+      allData[downUp]?.type !== "Answer" &&
+      e.keyCode === 13 &&
+      selectedSuggestion > -1 &&
+      !render
+    ) {
       const domain = allData[selectedSuggestion]?.url.replace("bing.com", "google.com");
       window.open(`${domain}`, "__blank");
     }
 
+    if (!hasWhiteSpace(value) && e.keyCode === 13 && selectedSuggestion > -1) {
+      window.open(`${allData[selectedSuggestion].Link}`, "__blank");
+    }
+
     // Enter
-    if (allData[downUp]?.type !== "Answer" && e.keyCode === 13 && selectedSuggestion === -1 && !render) {
+    // if (e.keyCode === 13 && selectedSuggestion === -1 && !render) {
+    if (
+      !hasWhiteSpace(value) &&
+      allData[downUp]?.type !== "Answer" &&
+      e.keyCode === 13 &&
+      selectedSuggestion === -1 &&
+      !render
+    ) {
       // const query = value.replace(/\s/g, "+");
       // const domain = `https://www.google.com/search?q=${query}`;
       // window.open(`${domain}`, "__blank");
@@ -583,12 +635,10 @@ function App() {
     // For pages
     // Found
     // if (value?.length > 2 && !underDomain && selectedPage === -1 && !suggestionsActive) {
-    //   console.log("rer1");
     //   setUnderDomain(true);
     // }
 
     // if (value?.length <= 2) {
-    //   console.log("rer2");
     //   // setUnderDomain(false);
     // }
 
@@ -619,12 +669,12 @@ function App() {
     }
 
     // Enter when not in hyperbeam
-    if (allData[downUp]?.type !== "Answer" && e.keyCode === 13 && cursor > -1 && !render) {
+    if (hasWhiteSpace(value) && allData[downUp]?.type !== "Answer" && e.keyCode === 13 && cursor > -1 && !render) {
       window.open(`https://${sites[cursor]?.domain}`, "__blank");
     }
 
     // Enter when in hyperbeam
-    if (allData[downUp]?.type !== "Answer" && e.keyCode === 13 && cursor > -1 && render) {
+    if (hasWhiteSpace(value) && allData[downUp]?.type !== "Answer" && e.keyCode === 13 && cursor > -1 && render) {
       window.open(`${tabs[hbCursor]?.pendingUrl}`, "__blank");
     }
     if (allData[downUp]?.type === "Answer") {
@@ -642,7 +692,6 @@ function App() {
     } else {
       setEight(false);
       setAnswSelect(false);
-      // console.log("false");
     }
 
     // Right when in hyperbeam
@@ -659,8 +708,10 @@ function App() {
     if (render && e.keyCode === 27) {
       setRender(false);
       setHbCursor(-1);
-      setAllData([]);
-      setAns([]);
+      dispatch(setAllData([]));
+      // setAllData([]);
+      // setAns([]);
+      // dispatch(setAnswerData([{ displayText: "Generating answer...", type: "Answer", ansData: "" }]));
     }
     // if ((e.keyCode === 40 || e.keyCode === 38) && allData[selectedSuggestion]?.type === "Answer") {
     //   setTwo("Bhavesh Test");
@@ -684,8 +735,10 @@ function App() {
       setValue("");
       setEscape(false);
       setSelectedPage(-1);
-      setAllData([]);
-      setAns([]);
+      dispatch(setAllData([]));
+      // setAllData([]);
+      // setAns([]);
+      // dispatch(setAnswerData([{ displayText: "Generating answer...", type: "Answer", ansData: "" }]));
     }
 
     // user hits escape but not in hyperbeam
@@ -706,8 +759,10 @@ function App() {
       setEscape(false);
       setUnderDomain(false);
       setSelectedPage(-1);
-      setAllData([]);
-      setAns([]);
+      dispatch(setAllData([]));
+      // setAllData([]);
+      // setAns([]);
+      // dispatch(setAnswerData([{ displayText: "Generating answer...", type: "Answer", ansData: "" }]));
     }
   };
 
@@ -762,12 +817,7 @@ function App() {
   const ansDetails = (type, data, index) => {
     let returnData = "";
     if (type === "Answer" && data.type === "Answer") {
-      returnData = loading ? (
-        // <AiOutlineLoading />
-        <p>Generating answer...</p>
-      ) : (
-        <ShortAnswer query={value} ans={data} selected={selectedSuggestion === index} />
-      );
+      returnData = <ShortAnswer query={value} ans={data} selected={selectedSuggestion === index} />;
     } else if (type === "Suggestions" && data.type === "Suggestions") {
       returnData = (
         <Suggestion
@@ -835,14 +885,14 @@ function App() {
           {!render && (
             <>
               <form className="input" onSubmit={handleSubmit}>
-                {underDomain && sites?.length > 0 ? (
+                {/* {underDomain && sites?.length > 0 ? (
                   <div className="underDomain">
                     <img src={sites[cursor]?.logo} alt={sites[cursor]?.name} />
                   </div>
                 ) : (
                   <></>
                   // <BiSearch className="icon" />
-                )}
+                )} */}
                 {escape && (
                   <div className="escape">
                     <AiOutlineCloseCircle />
@@ -854,7 +904,7 @@ function App() {
               {visibleSites ? (
                 <>
                   <div className="container" id="search-lines">
-                    {underDomainFilterd?.length > 0 || underDomainData?.length > 0 ? (
+                    {/* {underDomainFilterd?.length > 0 || underDomainData?.length > 0 ? (
                       <div className="section">
                         <div className="title">
                           <p>Found</p>
@@ -871,7 +921,7 @@ function App() {
                       </div>
                     ) : (
                       <></>
-                    )}
+                    )} */}
                     {/* Will show for Answer, Suggestions and Commands */}
                     {flg?.length > 0
                       ? flg.map((type, index) => (
@@ -946,6 +996,7 @@ function App() {
             count: domains.find((d) => d.domain_name === site.domain)?.count || 0,
           }))
         );
+        setCursor(0);
       })
       .catch((error) => {
         throw error;

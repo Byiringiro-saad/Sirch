@@ -6,9 +6,25 @@ function HeadlineData({ selected, ans }) {
   if (selected) {
     fieldRef?.current?.scrollIntoView();
   }
+  const getTime = (time) => {
+    const date = new Date(time);
+
+    // set the options for time format and time zone
+    const options = {
+      hour: "numeric",
+      minute: "numeric",
+      hour12: true,
+      timeZoneName: "short",
+    };
+
+    // convert to the desired time zone and format
+    const timeString = date.toLocaleTimeString("en-US", options);
+    return timeString;
+  };
   return (
     <Container selected={selected} ref={fieldRef}>
       <div className="short_ans">{ans?.Title}</div>
+      <div className="date">{getTime(ans?.Time)}</div>
     </Container>
   );
 }
