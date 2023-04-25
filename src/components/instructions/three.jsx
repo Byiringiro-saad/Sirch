@@ -36,6 +36,7 @@ const Container = styled.p`
     font-size: 1.2em;
     border-radius: 5px;
     margin: 0px;
+    font-weight: 600;
   }
 `;
 

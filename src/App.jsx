@@ -53,26 +53,26 @@ function App() {
   const top5Data = useSelector((state) => state.allDetailsReducer.top5Data);
   const allData = useSelector((state) => state.allDetailsReducer.allData);
 
-  const [commands] = useState([
-    {
-      id: 1,
-      name: "Clipboard History",
-      icon: CopyIcon,
-      type: "Commands",
-    },
-    {
-      id: 2,
-      name: "Import extension",
-      icon: CopiedIcon,
-      type: "Commands",
-    },
-    {
-      id: 3,
-      name: "Manage extension",
-      icon: CopiedIcon,
-      type: "Commands",
-    },
-  ]);
+  // const [commands] = useState([
+  //   {
+  //     id: 1,
+  //     name: "Clipboard History",
+  //     icon: CopyIcon,
+  //     type: "Commands",
+  //   },
+  //   {
+  //     id: 2,
+  //     name: "Import extension",
+  //     icon: CopiedIcon,
+  //     type: "Commands",
+  //   },
+  //   {
+  //     id: 3,
+  //     name: "Manage extension",
+  //     icon: CopiedIcon,
+  //     type: "Commands",
+  //   },
+  // ]);
   // useState(() => {
   //   dispatch(setAllData([...ans, ...top5Data, ...commands]));
   // }, [ans, top5Data]);
@@ -122,7 +122,6 @@ function App() {
     // "Signup",
   ]);
   const [underDomainFilterd, setUnderDomainFilterd] = useState([]);
-  // console.log("\nunderDomainData", underDomainData, "underDomainFilterd", underDomainFilterd);
   const [selectedPage, setSelectedPage] = useState(-1);
   const [spaceClicked, setSpaceClicked] = useState(false);
   const [showInstructions, setShowInstructions] = useState(false);
@@ -144,11 +143,13 @@ function App() {
 
   const notice =
     "The user will input a search query. Your job is to pretend to be a relevant expert, and to provide an answer in seven words or less. ";
-
   const getShortAnsResults = async () => {
     const data = await axios.post(`https://us-east4-banded-water-377216.cloudfunctions.net/api-chatgpt-shortanswer`, {
       query: value,
     });
+    if (!data) {
+      setLoading(true);
+    }
     setSitesLoading(false);
     dispatch(
       setAnswerData([{ displayText: data?.data?.message?.content, type: "Answer", ansData: data?.data?.message }])
@@ -157,7 +158,7 @@ function App() {
       setAllData([
         ...[{ displayText: data?.data?.message?.content, type: "Answer", ansData: data?.data?.message }],
         ...top5Data,
-        ...commands,
+        // ...commands,
       ])
     );
   };
@@ -192,6 +193,7 @@ function App() {
     }, debounceTimeMs);
     return () => clearTimeout(getData);
   }, [value, pressEcs]);
+
   useEffect(() => {
     const getData = setTimeout(() => {
       if (value && !hasWhiteSpace(value)) {
@@ -200,6 +202,7 @@ function App() {
     }, 200);
     return () => clearTimeout(getData);
   }, [sites, cursor]);
+
   const getSubData = async (value) => {
     const subData = await axios.post("https://us-east4-banded-water-377216.cloudfunctions.net/api-chatgpt-questions", {
       query: value,
@@ -309,11 +312,12 @@ function App() {
     e.preventDefault();
     setAskEmail(!askEmail);
   };
+
   const handleChange = async (e) => {
     setValue(e.target.value.toLowerCase());
     setSelectedSuggestion(-1);
     if (hasWhiteSpace(e.target.value)) {
-      dispatch(setAllData([...ans, ...top5Data, ...commands]));
+      dispatch(setAllData([...ans, ...top5Data]));
       dispatch(setFlgData(["Answer", "Suggestions"]));
       // dispatch(setFlgData(["Answer", "Suggestions", "Commands"]));
     } else {
@@ -581,8 +585,9 @@ function App() {
     // For suggestions
     // Down
     let downUp = 0;
-    if (e.keyCode === 40 && suggestionsActive && selectedSuggestion <= -1) {
+    if (e.keyCode === 40 && suggestionsActive && selectedSuggestion <= -1 && !render) {
       setBackupValue(value);
+      // console.log(591);
       downUp = 0;
       if (allData[0]?.type === "Suggestions") {
         setValue(allData[0]?.displayText);
@@ -591,6 +596,18 @@ function App() {
     }
 
     // Down
+    // console.log(601, suggestionsActive, selectedSuggestion >= 0, selectedSuggestion < allData.length - 1);
+    // if (e.keyCode === 40 && suggestionsActive && selectedSuggestion >= 0 && selectedSuggestion < allData.length - 1) {
+    //   downUp = selectedSuggestion + 1;
+    //   setDownUpEnter(selectedSuggestion + 1);
+    //   if (allData[downUpEnter].type === "Suggestions") {
+    //     setValue(allData[downUpEnter]?.displayText);
+    //   }
+    //   // if (allData[selectedSuggestion + 1].type === "Suggestions") {
+    //   //   setValue(allData[selectedSuggestion + 1]?.displayText);
+    //   // }
+    //   setSelectedSuggestion(downUpEnter + 1);
+    // }
     if (e.keyCode === 40 && suggestionsActive && selectedSuggestion >= 0 && selectedSuggestion < allData.length - 1) {
       downUp = selectedSuggestion + 1;
       setDownUpEnter(selectedSuggestion + 1);
@@ -653,25 +670,26 @@ function App() {
 
     // For pages
     // Found
-    if (value?.length > 2 && !underDomain && selectedPage === -1 && !suggestionsActive) {
-      setUnderDomain(true);
-    }
+    // if (value?.length > 2 && !underDomain && selectedPage === -1 && !suggestionsActive) {
+    //   setUnderDomain(true);
+    // }
 
-    if (value?.length <= 2) {
-      setUnderDomain(false);
-    }
-
+    // if (value?.length <= 2) {
+    //   setUnderDomain(false);
+    // }
     // Down
-    if (e.keyCode === 40 && !underDomain && selectedPage <= -1 && !suggestionsActive) {
+    if (e.keyCode === 40 && !underDomain && selectedPage <= -1 && suggestionsActive) {
       setBackupValue(value);
-      setValue("");
-      setSelectedPage(0);
+      // setValue("");
+      // console.log(675);
+      setSelectedPage(selectedPage + 1);
       setUnderDomain(true);
     }
 
     // Down
     if (e.keyCode === 40 && underDomain && selectedPage >= -1 && selectedPage <= underDomainData.length + 1) {
       setSelectedPage(selectedPage + 1);
+      // console.log(683);
     }
 
     // Up
@@ -682,7 +700,7 @@ function App() {
     // Up
     if (e.keyCode === 38 && underDomain && selectedPage === 0) {
       setValue(backupValue);
-      setBackupValue("");
+      // setBackupValue("");
       setSelectedPage(-1);
       setUnderDomain(false);
     }
@@ -696,7 +714,7 @@ function App() {
     if (hasWhiteSpace(value) && allData[downUp]?.type !== "Answer" && e.keyCode === 13 && cursor > -1 && render) {
       window.open(`${tabs[hbCursor]?.pendingUrl}`, "__blank");
     }
-    if (allData[downUp]?.type === "Answer") {
+    if (allData[downUp]?.type === "Answer" && hbCursor === -1) {
       setIsAnsPressEnt(e.keyCode);
       if (e.keyCode === 39 || e.keyCode === 37) {
         getShortAnsResults(value);
@@ -704,8 +722,14 @@ function App() {
       if (e.keyCode === 13) {
         getSubData(allData[downUpEnter]?.displayText);
       }
+      // console.log("\nallData", allData, downUpEnter, downUp);
       if (e.keyCode === 38 || e.keyCode === 40) {
-        setAnswSelect(true);
+        if (downUpEnter < 5) {
+          setAnswSelect(true);
+        } else {
+          setAnswSelect(false);
+        }
+        // console.log(718, e.keyCode === 38, e.keyCode === 40, !render, downUpEnter > 5);
       }
       setEight("eight");
     } else {
@@ -792,9 +816,9 @@ function App() {
       window.removeEventListener("keydown", handleKeyDown);
     };
   });
-
   useEffect(() => {
-    if (hasWhiteSpace(value) && cursor > -1) {
+    if (hasWhiteSpace(value) && cursor > 0) {
+      // change cursor condition for paste-value in input
       setRender(true);
       setHbCursor(0);
       setOne("five");
@@ -815,7 +839,7 @@ function App() {
   useEffect(() => {
     const run = async () => {
       if (underDomain && sites?.length > 0 && sites[cursor]) {
-        setValue("");
+        // setValue("");
         setUnderDomainFilterd([]);
         setUnderDomainData([]);
       }
@@ -849,15 +873,6 @@ function App() {
           handleRenderPage={handleRenderPage}
         />
       );
-    } else if (type === "Commands" && data.type === "Commands") {
-      // returnData = (
-      //   <Command
-      //     command={data}
-      //     key={data?.id}
-      //     colors={selectedSuggestion > 5 ? colors : {}}
-      //     selected={suggestionsActive ? selectedSuggestion === index : selectedPage === underDomainData.length + index}
-      //   />
-      // );
     } else if (type === "Headlines" && data.type === "Headlines") {
       returnData = <HeadlineData key={data.Title} query={value} ans={data} selected={selectedSuggestion === index} />;
     } else {
@@ -963,7 +978,7 @@ function App() {
                               {allData.length ? (
                                 allData.map((data, index) => ansDetails(type, data, index))
                               ) : (
-                                <p>No data Found</p>
+                                <p>Generating answer...</p>
                               )}
                             </div>
                           </div>
