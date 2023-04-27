@@ -23,7 +23,7 @@ function Nav({ render }) {
             <img src="/logo.jpg" alt="Sirch" />
           </div>
           <div className="navigation">
-            <a href="https://bento.me/sirchit" rel="noreferrer" target="_blank" className="link">
+            <a href="https://bento.me/sirch" rel="noreferrer" target="_blank" className="link">
               About
             </a>
             <p className="button" onClick={handleShowForm}>

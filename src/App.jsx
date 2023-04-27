@@ -147,9 +147,6 @@ function App() {
     const data = await axios.post(`https://us-east4-banded-water-377216.cloudfunctions.net/api-chatgpt-shortanswer`, {
       query: value,
     });
-    if (!data) {
-      setLoading(true);
-    }
     setSitesLoading(false);
     dispatch(
       setAnswerData([{ displayText: data?.data?.message?.content, type: "Answer", ansData: data?.data?.message }])
@@ -432,7 +429,9 @@ function App() {
     dispatch(setTop5Data(top5));
   };
   useEffect(() => {
-    callSuggestion();
+    if (value) {
+      callSuggestion();
+    }
   }, [value]);
 
   // Found useEffect
@@ -473,7 +472,9 @@ function App() {
 
     if (!hasWhiteSpace(value)) {
       setSpaceClicked(false);
-      setCursor(-1);
+      if (!sites.length) {
+        setCursor(-1);
+      }
       setSuggestionsActive(true);
     }
 
@@ -485,8 +486,10 @@ function App() {
     }
 
     if (value?.length === 0 && suggestionsActive) {
-      setSites([]);
       setEscape(false);
+    }
+    if (hasWhiteSpace(value) && suggestionsActive) {
+      setSites([]);
     }
   }, [value]);
 
@@ -587,27 +590,16 @@ function App() {
     let downUp = 0;
     if (e.keyCode === 40 && suggestionsActive && selectedSuggestion <= -1 && !render) {
       setBackupValue(value);
-      // console.log(591);
       downUp = 0;
       if (allData[0]?.type === "Suggestions") {
         setValue(allData[0]?.displayText);
+      } else if (allData[0]?.type === "Headlines") {
+        setValue("");
       }
       setSelectedSuggestion(0);
     }
 
     // Down
-    // console.log(601, suggestionsActive, selectedSuggestion >= 0, selectedSuggestion < allData.length - 1);
-    // if (e.keyCode === 40 && suggestionsActive && selectedSuggestion >= 0 && selectedSuggestion < allData.length - 1) {
-    //   downUp = selectedSuggestion + 1;
-    //   setDownUpEnter(selectedSuggestion + 1);
-    //   if (allData[downUpEnter].type === "Suggestions") {
-    //     setValue(allData[downUpEnter]?.displayText);
-    //   }
-    //   // if (allData[selectedSuggestion + 1].type === "Suggestions") {
-    //   //   setValue(allData[selectedSuggestion + 1]?.displayText);
-    //   // }
-    //   setSelectedSuggestion(downUpEnter + 1);
-    // }
     if (e.keyCode === 40 && suggestionsActive && selectedSuggestion >= 0 && selectedSuggestion < allData.length - 1) {
       downUp = selectedSuggestion + 1;
       setDownUpEnter(selectedSuggestion + 1);
@@ -681,7 +673,6 @@ function App() {
     if (e.keyCode === 40 && !underDomain && selectedPage <= -1 && suggestionsActive) {
       setBackupValue(value);
       // setValue("");
-      // console.log(675);
       setSelectedPage(selectedPage + 1);
       setUnderDomain(true);
     }
@@ -689,7 +680,6 @@ function App() {
     // Down
     if (e.keyCode === 40 && underDomain && selectedPage >= -1 && selectedPage <= underDomainData.length + 1) {
       setSelectedPage(selectedPage + 1);
-      // console.log(683);
     }
 
     // Up
@@ -722,14 +712,12 @@ function App() {
       if (e.keyCode === 13) {
         getSubData(allData[downUpEnter]?.displayText);
       }
-      // console.log("\nallData", allData, downUpEnter, downUp);
       if (e.keyCode === 38 || e.keyCode === 40) {
         if (downUpEnter < 5) {
           setAnswSelect(true);
         } else {
           setAnswSelect(false);
         }
-        // console.log(718, e.keyCode === 38, e.keyCode === 40, !render, downUpEnter > 5);
       }
       setEight("eight");
     } else {
@@ -817,8 +805,34 @@ function App() {
     };
   });
   useEffect(() => {
-    if (hasWhiteSpace(value) && cursor > 0) {
-      // change cursor condition for paste-value in input
+    // if (hasWhiteSpace(value) && cursor > 0) {
+    //   // change cursor condition for paste-value in input
+    //   setRender(true);
+    //   setHbCursor(0);
+    //   setOne("five");
+    //   setTwo("Go");
+    //   setThree("To Upvote");
+    //   setFour("enter");
+    //   setFive("up");
+    //   setSix("more");
+    //   setSeven("");
+    // }
+
+    // when paste value in input
+    if (hasWhiteSpace(value) && cursor === -1) {
+      setRender(false);
+      setHbCursor(-1);
+      setOne("five");
+      setTwo("Go");
+      setThree("To Upvote");
+      setFour("enter");
+      setFive("up");
+      setSix("more");
+      setSeven("");
+    }
+
+    // when type value in input
+    if (hasWhiteSpace(value) && cursor >= 0) {
       setRender(true);
       setHbCursor(0);
       setOne("five");
@@ -880,8 +894,6 @@ function App() {
     }
     return returnData;
   };
-  // console.log("\nall", allData);
-  // console.log("\nselectedPage", selectedPage, "selectedSuggestion", selectedSuggestion);
 
   return (
     <>
@@ -1065,7 +1077,7 @@ const Container = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  z-index: 1000;
+  z-index: ${(props) => (props.visibleSites ? "1000" : "-1000")};
   position: absolute;
   top: 0;
   left: calc(50% - 650px / 2);
