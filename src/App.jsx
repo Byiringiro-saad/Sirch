@@ -94,6 +94,7 @@ function App() {
       gray: "#ffc4c4",
     },
   };
+  const [placeHolder, setPlaceHolder] = useState(`Type "nyt" to see what happens`);
   const [showVideo, setShowVideo] = useState(false);
   const [showEnter, setShowEnter] = useState(false);
   const [showInvestOne, setShowInvestOne] = useState(false);
@@ -435,7 +436,6 @@ function App() {
   }, [value]);
 
   // Found useEffect
-
   useEffect(() => {
     const selectedDomain = sites[cursor]?.domain;
     if (selectedDomain) {
@@ -577,6 +577,12 @@ function App() {
 
   // const debounceHandleRenderPage = useMemo(() => debounce(handleRenderPage, 1000), [hb]);
 
+  // useEffect(() => {
+  //   if (suggestionsActive && !render && (value?.length > 0 || backupValue?.length > 0)) {
+  //     setPlaceHolder(`Search within the "${sites[cursor]?.name}"`);
+  //   }
+  // }, [cursor]);
+
   useEffect(() => {
     handleRenderPage(data);
   }, [indexHyperbeamSlice]);
@@ -595,6 +601,7 @@ function App() {
         setValue(allData[0]?.displayText);
       } else if (allData[0]?.type === "Headlines") {
         setValue("");
+        setPlaceHolder(`Search within the "${sites[cursor]?.name}"`);
       }
       setSelectedSuggestion(0);
     }
@@ -741,6 +748,7 @@ function App() {
       setHbCursor(-1);
       dispatch(setAllData([]));
       setPressEcs(pressEcs + 1);
+      setPlaceHolder(`Type "nyt" to see what happens`);
       // setAllData([]);
       // setAns([]);
       // dispatch(setAnswerData([{ displayText: "Generating answer...", type: "Answer", ansData: "" }]));
@@ -768,6 +776,7 @@ function App() {
       setEscape(false);
       setSelectedPage(-1);
       dispatch(setAllData([]));
+      setPlaceHolder(`Type "nyt" to see what happens`);
       // setAllData([]);
       // setAns([]);
       // dispatch(setAnswerData([{ displayText: "Generating answer...", type: "Answer", ansData: "" }]));
@@ -792,6 +801,7 @@ function App() {
       setUnderDomain(false);
       setSelectedPage(-1);
       dispatch(setAllData([]));
+      setPlaceHolder(`Type "nyt" to see what happens`);
       // setAllData([]);
       // setAns([]);
       // dispatch(setAnswerData([{ displayText: "Generating answer...", type: "Answer", ansData: "" }]));
@@ -804,6 +814,7 @@ function App() {
       window.removeEventListener("keydown", handleKeyDown);
     };
   });
+
   useEffect(() => {
     // if (hasWhiteSpace(value) && cursor > 0) {
     //   // change cursor condition for paste-value in input
@@ -955,7 +966,7 @@ function App() {
                   onKeyDown={handleKeyPressed}
                   onChange={handleChange}
                   autoFocus
-                  placeholder={`Type "nyt" to see what happens`}
+                  placeholder={placeHolder}
                 />
               </form>
               {visibleSites ? (
