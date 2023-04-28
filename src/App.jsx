@@ -190,7 +190,7 @@ function App() {
       }
     }, debounceTimeMs);
     return () => clearTimeout(getData);
-  }, [value, pressEcs]);
+  }, [value, pressEcs, top5Data]);
 
   useEffect(() => {
     const getData = setTimeout(() => {
@@ -387,7 +387,7 @@ function App() {
 
       if (hasWhiteSpace(e.target.value)) {
         // getting suggestions from bing api
-        callSuggestion();
+        // callSuggestion();
 
         // changing the instructions
         setTwo("Google SERP");
@@ -412,13 +412,20 @@ function App() {
         // dispatch(setAllData([...ans, ...top5, ...commands]));
         // setAllData([...ans, ...top5, ...commands]);
         // debounceHandleRenderPage(e.target.value, hb);
-        const data = await getBingSearch(e.target.value);
-        setData(data);
-        await handleRenderPage(data);
+
+        // const data = await getBingSearch(e.target.value);
+        // setData(data);
+        // await handleRenderPage(data);
       } else {
         companySuggest(e.target.value);
       }
     }
+  };
+
+  const callSearch = async () => {
+    const dataSearch = await getBingSearch(value);
+    setData(dataSearch);
+    await handleRenderPage(dataSearch);
   };
 
   const callSuggestion = async () => {
@@ -428,11 +435,17 @@ function App() {
       return ele;
     });
     dispatch(setTop5Data(top5));
+    dispatch(setAllData([...ans, ...top5]));
   };
+
   useEffect(() => {
-    if (value) {
-      callSuggestion();
-    }
+    const getData = setTimeout(() => {
+      if (hasWhiteSpace(value)) {
+        callSuggestion();
+        callSearch();
+      }
+    }, 2000);
+    return () => clearTimeout(getData);
   }, [value]);
 
   // Found useEffect
@@ -454,6 +467,69 @@ function App() {
       setUnderDomainData([]);
     }
   }, [cursor, value, sites]);
+  useEffect(() => {
+    // new for hyperbeam set when fast type
+
+    if (hasWhiteSpace(value)) {
+      setOne("five");
+      setTwo("Go");
+      setThree("To Upvote");
+      setFour("enter");
+      setFive("up");
+      setSix("more");
+      setSeven("");
+      console.log("\ncursor", cursor);
+      if (cursor === -1) {
+        setRender(false);
+        setHbCursor(-1);
+        console.log("yes");
+      } else if (cursor >= 0) {
+        setRender(true);
+        setHbCursor(0);
+        console.log("no");
+      }
+    }
+
+    // old conition
+    // if (hasWhiteSpace(value) && cursor > 0) {
+    //   // change cursor condition for paste-value in input
+    //   setRender(true);
+    //   setHbCursor(0);
+    //   setOne("five");
+    //   setTwo("Go");
+    //   setThree("To Upvote");
+    //   setFour("enter");
+    //   setFive("up");
+    //   setSix("more");
+    //   setSeven("");
+    // }
+
+    // when paste value in input
+    // if (hasWhiteSpace(value) && cursor === -1) {
+    //   setRender(false);
+    //   setHbCursor(-1);
+    //   setOne("five");
+    //   setTwo("Go");
+    //   setThree("To Upvote");
+    //   setFour("enter");
+    //   setFive("up");
+    //   setSix("more");
+    //   setSeven("");
+    // }
+
+    // // when type value in input
+    // if (hasWhiteSpace(value) && cursor >= 0) {
+    //   setRender(true);
+    //   setHbCursor(0);
+    //   setOne("five");
+    //   setTwo("Go");
+    //   setThree("To Upvote");
+    //   setFour("enter");
+    //   setFive("up");
+    //   setSix("more");
+    //   setSeven("");
+    // }
+  }, [cursor]);
 
   useEffect(() => {
     if (!hasWhiteSpace(value) && suggestionsActive && selectedSuggestion === -1) {
@@ -466,6 +542,7 @@ function App() {
 
     if (hasWhiteSpace(value) && !suggestionsActive && selectedSuggestion === -1) {
       setSpaceClicked(true);
+      console.log(482);
       setCursor(-1);
       setSuggestionsActive(true);
     }
@@ -473,6 +550,7 @@ function App() {
     if (!hasWhiteSpace(value)) {
       setSpaceClicked(false);
       if (!sites.length) {
+        console.log(490);
         setCursor(-1);
       }
       setSuggestionsActive(true);
@@ -669,13 +747,13 @@ function App() {
 
     // For pages
     // Found
-    // if (value?.length > 2 && !underDomain && selectedPage === -1 && !suggestionsActive) {
-    //   setUnderDomain(true);
-    // }
+    if (value?.length > 2 && !underDomain && selectedPage === -1 && !suggestionsActive) {
+      setUnderDomain(true);
+    }
 
-    // if (value?.length <= 2) {
-    //   setUnderDomain(false);
-    // }
+    if (value?.length <= 2) {
+      setUnderDomain(false);
+    }
     // Down
     if (e.keyCode === 40 && !underDomain && selectedPage <= -1 && suggestionsActive) {
       setBackupValue(value);
@@ -781,7 +859,9 @@ function App() {
       // setAns([]);
       // dispatch(setAnswerData([{ displayText: "Generating answer...", type: "Answer", ansData: "" }]));
     }
-
+    if (e.keyCode === 27) {
+      setCursor(-1);
+    }
     // user hits escape but not in hyperbeam
     if (e.keyCode === 27 && !render) {
       setVisibleSites(false);
@@ -814,47 +894,6 @@ function App() {
       window.removeEventListener("keydown", handleKeyDown);
     };
   });
-
-  useEffect(() => {
-    // if (hasWhiteSpace(value) && cursor > 0) {
-    //   // change cursor condition for paste-value in input
-    //   setRender(true);
-    //   setHbCursor(0);
-    //   setOne("five");
-    //   setTwo("Go");
-    //   setThree("To Upvote");
-    //   setFour("enter");
-    //   setFive("up");
-    //   setSix("more");
-    //   setSeven("");
-    // }
-
-    // when paste value in input
-    if (hasWhiteSpace(value) && cursor === -1) {
-      setRender(false);
-      setHbCursor(-1);
-      setOne("five");
-      setTwo("Go");
-      setThree("To Upvote");
-      setFour("enter");
-      setFive("up");
-      setSix("more");
-      setSeven("");
-    }
-
-    // when type value in input
-    if (hasWhiteSpace(value) && cursor >= 0) {
-      setRender(true);
-      setHbCursor(0);
-      setOne("five");
-      setTwo("Go");
-      setThree("To Upvote");
-      setFour("enter");
-      setFive("up");
-      setSix("more");
-      setSeven("");
-    }
-  }, [cursor]);
 
   useEffect(() => {
     setOne("Type any character to begin");
