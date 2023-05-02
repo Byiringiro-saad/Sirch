@@ -13,7 +13,7 @@ export const getBingSearch = async (query) => {
 
   const headers = getHeaders(lang);
   const res = await axios.get(url, { headers });
-  return res.data.webPages.value;
+  return res?.data?.webPages?.value;
 };
 
 export const bingAutoSuggest = async (query) => {
@@ -22,7 +22,7 @@ export const bingAutoSuggest = async (query) => {
   const url = `${Bing}Suggestions?q=${query}&&cc=${countrycode}`;
   const headers = getHeaders(lang);
   const res = await axios.get(url, { headers });
-  return res.data.suggestionGroups[0].searchSuggestions;
+  return res?.data?.suggestionGroups?.[0]?.searchSuggestions;
 };
 
 export const openNewTab = (id, index, url) => {

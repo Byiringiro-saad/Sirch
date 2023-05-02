@@ -7,6 +7,9 @@ export const allDetailsSlice = createSlice({
     flgData: ["Answer", "Suggestions", "Commands", "Headlines"],
     allData: [],
     top5Data: [],
+    iconSites: [],
+    iconTabs: [],
+    iconData: [],
   },
   reducers: {
     setAnswerData: (state, action) => ({
@@ -25,9 +28,22 @@ export const allDetailsSlice = createSlice({
       ...state,
       top5Data: action.payload,
     }),
+    setIconSites: (state, action) => ({
+      ...state,
+      iconSites: action.payload,
+    }),
+    setIconTabs: (state, action) => ({
+      ...state,
+      iconTabs: action.payload,
+    }),
+    setIconData: (state, action) => ({
+      ...state,
+      iconData: action.payload,
+    }),
   },
 });
 
-export const { setAnswerData, setFlgData, setAllData, setTop5Data } = allDetailsSlice.actions;
+export const { setAnswerData, setFlgData, setAllData, setTop5Data, setIconSites, setIconTabs, setIconData } =
+  allDetailsSlice.actions;
 
 export default allDetailsSlice.reducer;

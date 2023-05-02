@@ -12,27 +12,20 @@ import axios from "axios";
 import React, { useMemo, useState, useEffect } from "react";
 import styled from "styled-components";
 import useLocalStorage from "use-local-storage";
-import { debounce } from "lodash";
 import { useDispatch, useSelector } from "react-redux";
 // icons
 import { AiOutlineCloseCircle } from "react-icons/ai";
-import { CopyIcon, CopiedIcon } from "./icons/icons";
 
 // utils
 import { getSavedDomains, getUnderDomainsByDomain } from "./action/supabaseAction";
 import { bingAutoSuggest, getBingSearch } from "./action/bingAction";
 import { checkSession, getEmbeddedUrl, loadHyperBeam, renderPage, updateTab } from "./action/hyperBeam";
 
-// portals
-// import EmailPortal from "./portals/email";
-
 // components
 import Nav from "./components/nav";
 import Page from "./components/page";
 import Icons from "./components/icons";
-import Footer from "./components/footer";
 import ShortansIcon from "./components/shortansIcon";
-import Command from "./components/command";
 import Suggestion from "./components/suggestion";
 import Instruction from "./components/instruction";
 import ShortAnswer from "./components/shortAnswer";
@@ -44,7 +37,16 @@ import Two from "./components/invest/two";
 import Three from "./components/invest/three";
 import Enter from "./components/popup/enter";
 
-import { setFlgData, setAnswerData, setAllData, setTop5Data } from "./redux/allDetailsSlice";
+// Redux
+import {
+  setFlgData,
+  setAnswerData,
+  setAllData,
+  setTop5Data,
+  setIconSites,
+  setIconTabs,
+  setIconData,
+} from "./redux/allDetailsSlice";
 
 function App() {
   const dispatch = useDispatch();
@@ -52,31 +54,6 @@ function App() {
   const flg = useSelector((state) => state.allDetailsReducer.flgData);
   const top5Data = useSelector((state) => state.allDetailsReducer.top5Data);
   const allData = useSelector((state) => state.allDetailsReducer.allData);
-
-  // const [commands] = useState([
-  //   {
-  //     id: 1,
-  //     name: "Clipboard History",
-  //     icon: CopyIcon,
-  //     type: "Commands",
-  //   },
-  //   {
-  //     id: 2,
-  //     name: "Import extension",
-  //     icon: CopiedIcon,
-  //     type: "Commands",
-  //   },
-  //   {
-  //     id: 3,
-  //     name: "Manage extension",
-  //     icon: CopiedIcon,
-  //     type: "Commands",
-  //   },
-  // ]);
-  // useState(() => {
-  //   dispatch(setAllData([...ans, ...top5Data, ...commands]));
-  // }, [ans, top5Data]);
-
   // theme data
   const defaultDark = window?.matchMedia("(prefers-color-scheme: dark)")?.matches;
   const [theme, setTheme] = useLocalStorage("theme", defaultDark ? "dark" : "light");
@@ -94,7 +71,10 @@ function App() {
       gray: "#ffc4c4",
     },
   };
-  const [placeHolder, setPlaceHolder] = useState(`Type "nyt" to see what happens`);
+
+  const debounceTimeMs = 2000;
+
+  const [placeHolder, setPlaceHolder] = useState("Ask a question");
   const [showVideo, setShowVideo] = useState(false);
   const [showEnter, setShowEnter] = useState(false);
   const [showInvestOne, setShowInvestOne] = useState(false);
@@ -114,36 +94,35 @@ function App() {
   const [render, setRender] = useState(false);
   const [selectedSuggestion, setSelectedSuggestion] = useState(-1);
   const [underDomain, setUnderDomain] = useState(false);
-  const [underDomainData, setUnderDomainData] = useState([
-    // "Home",
-    // "About Us",
-    // "Contact Us",
-    // "Explore",
-    // "Login",
-    // "Signup",
-  ]);
+  const [underDomainData, setUnderDomainData] = useState([]);
   const [underDomainFilterd, setUnderDomainFilterd] = useState([]);
   const [selectedPage, setSelectedPage] = useState(-1);
-  const [spaceClicked, setSpaceClicked] = useState(false);
   const [showInstructions, setShowInstructions] = useState(false);
-  const [askEmail, setAskEmail] = useState(false);
   const [sitesLoading, setSitesLoading] = useState(false);
-  const [headlines, setHeadlines] = useState([]);
   const [downUpEnter, setDownUpEnter] = useState(0);
   const [pressEcs, setPressEcs] = useState(0);
-
-  // const [flg, setFlg] = useState(["Answer", "Suggestions", "Commands", "Headlines"]);
-
+  const [escape, setEscape] = useState(false);
+  const [noDataFound, setnoDataFound] = useState(false);
   const [indexHyperbeamSlice, setIndexHyperbeamSlice] = useState(0);
+  const [isSpacePressed, setIsSpacePressed] = useState(false);
 
-  const debounceTimeMs = 2000;
-  const fieldRef = React.useRef(null);
-  const [queryResult, setQueryResult] = useState("");
+  // instructions
+  const [one, setOne] = useState("");
+  const [two, setTwo] = useState("");
+  const [three, setThree] = useState("");
+  const [four, setFour] = useState("");
+  const [five, setFive] = useState("");
+  const [six, setSix] = useState("");
+  const [seven, setSeven] = useState("");
+  const [eight, setEight] = useState("");
 
-  const [loading, setLoading] = useState(false);
+  // hyperbeam
+  const [hb, setHb] = useState(null);
+  const [hbCursor, setHbCursor] = useState(-1);
 
-  const notice =
-    "The user will input a search query. Your job is to pretend to be a relevant expert, and to provide an answer in seven words or less. ";
+  // supabase related state
+  const [domains, setDomains] = useState(null);
+
   const getShortAnsResults = async () => {
     const data = await axios.post(`https://us-east4-banded-water-377216.cloudfunctions.net/api-chatgpt-shortanswer`, {
       query: value,
@@ -156,7 +135,6 @@ function App() {
       setAllData([
         ...[{ displayText: data?.data?.message?.content, type: "Answer", ansData: data?.data?.message }],
         ...top5Data,
-        // ...commands,
       ])
     );
   };
@@ -166,7 +144,10 @@ function App() {
       const apiData = await axios.get(
         `https://us-east4-banded-water-377216.cloudfunctions.net/news-api-items?organization=${sites?.[cursor]?.domain}`
       );
-      setHeadlines(apiData?.data);
+
+      if (apiData?.data?.length === 0) {
+        setnoDataFound(true);
+      }
       const headline = [];
       apiData?.data.forEach((ele) => {
         headline.push({
@@ -181,25 +162,6 @@ function App() {
       dispatch(setAllData([...headline]));
     }
   };
-  useEffect(() => {
-    const getData = setTimeout(() => {
-      if (value && hasWhiteSpace(value)) {
-        getShortAnsResults();
-      } else {
-        setQueryResult("");
-      }
-    }, debounceTimeMs);
-    return () => clearTimeout(getData);
-  }, [value, pressEcs, top5Data]);
-
-  useEffect(() => {
-    const getData = setTimeout(() => {
-      if (value && !hasWhiteSpace(value)) {
-        getHeadline();
-      }
-    }, 200);
-    return () => clearTimeout(getData);
-  }, [sites, cursor]);
 
   const getSubData = async (value) => {
     const subData = await axios.post("https://us-east4-banded-water-377216.cloudfunctions.net/api-chatgpt-questions", {
@@ -216,40 +178,16 @@ function App() {
       });
     });
     dispatch(setTop5Data(top5));
-    // dispatch(setAllData([...ans, ...top5, ...commands]));
   };
-
-  // instructions
-  const [one, setOne] = useState("");
-  const [two, setTwo] = useState("");
-  const [three, setThree] = useState("");
-  const [four, setFour] = useState("");
-  const [five, setFive] = useState("");
-  const [six, setSix] = useState("");
-  const [seven, setSeven] = useState("");
-  const [eight, setEight] = useState("");
-
-  const [escape, setEscape] = useState(false);
-
-  // hyperbeam
-  const [hb, setHb] = useState(null);
-  const [hbCursor, setHbCursor] = useState(-1);
-
-  // supabase related state
-  const [fetchError, setFetchError] = useState(null);
-  const [domains, setDomains] = useState(null);
 
   const fetchDomains = async () => {
     const { data, error } = await getSavedDomains();
     if (error) {
-      setFetchError("Could not fetch the domains");
       setDomains(null);
       throw error;
     }
-
     if (data) {
       setDomains(data);
-      setFetchError(null);
     }
   };
 
@@ -277,52 +215,31 @@ function App() {
 
   const handleSupabaseDomainCount = async (sites) => {
     const { data, error } = await getSavedDomains();
-    if (error) {
-      // setFetchError("Could not fetch the domains");
-      // setDomains(null);
-    }
     // all domains count
     if (data) {
       setDomains(data);
-      setSites(
-        sites.map((site) => ({
-          ...site,
-          count: domains.find((d) => d.domain_name === site.domain)?.count || 0,
-        }))
-      );
+      const siteDate = sites.map((site) => ({
+        ...site,
+        count: domains.find((d) => d.domain_name === site.domain)?.count || 0,
+      }));
+      setSites(siteDate);
+      dispatch(setIconSites(siteDate));
     }
-  };
-
-  const switchTheme = () => {
-    const newTheme = theme === "light" ? "light" : "dark";
-    setTheme(newTheme);
   };
 
   function hasWhiteSpace(s) {
     return /\s/g.test(s);
   }
 
-  const underDomainSearch = (key) => {
-    // not yet implemented, store data in underDomainData
-  };
-
-  const handleAskEmail = (e) => {
-    e.preventDefault();
-    setAskEmail(!askEmail);
-  };
-
   const handleChange = async (e) => {
     setValue(e.target.value.toLowerCase());
+    setnoDataFound(false);
     setSelectedSuggestion(-1);
     if (hasWhiteSpace(e.target.value)) {
+      setIsSpacePressed(true);
       dispatch(setAllData([...ans, ...top5Data]));
       dispatch(setFlgData(["Answer", "Suggestions"]));
-      // dispatch(setFlgData(["Answer", "Suggestions", "Commands"]));
     } else {
-      // dispatch(setAllData([...ans, ...top5Data, ...commands]));
-      // getHeadline();
-
-      // dispatch(setAllData([...ans, ...top5Data, ...commands]));
       dispatch(setFlgData(["Headlines"]));
     }
     if (!underDomain) {
@@ -332,7 +249,9 @@ function App() {
         setShowVideo(false);
         setSitesLoading(false);
         setSites([]);
+        dispatch(setIconSites([]));
         setTabs([]);
+        dispatch(setIconTabs([]));
         setOne("");
         setFour("");
         setTwo("");
@@ -341,9 +260,6 @@ function App() {
         setSix("");
         setSeven("");
         dispatch(setAllData([]));
-        // setAllData([]);
-        // setAns([]);
-        // dispatch(setAnswerData([{ displayText: "Generating answer...", type: "Answer", ansData: "" }]));
       }
 
       if (e.target.value?.length > 0) {
@@ -357,38 +273,21 @@ function App() {
         setThree("Domains");
         setSix("down");
         setSeven("Pages");
-        underDomainSearch(e.target.value);
       }
-
-      // if (e.target.value.length > 2) {
-      //   setOne("two");
-      //   setFour("down");
-      //   setTwo("Suggestions & stashed pages");
-      //   setFive("right");
-      //   setThree("Domains");
-      //   setSix("");
-      //   setSeven("");
-      // }
 
       if (e.target.value?.length === 1) {
         setCursor(0);
       }
 
-      if (!hasWhiteSpace(value)) {
+      if (!hasWhiteSpace(e.target.value)) {
         setCursor(0);
         setSuggestionsActive(false);
         setEscape(false);
         setSitesLoading(false);
         dispatch(setAllData([]));
-        // setAllData([]);
-        // setAns([]);
-        // dispatch(setAnswerData([{ displayText: "Generating answer...", type: "Answer", ansData: "" }]));
       }
 
       if (hasWhiteSpace(e.target.value)) {
-        // getting suggestions from bing api
-        // callSuggestion();
-
         // changing the instructions
         setTwo("Google SERP");
         setThree("");
@@ -399,23 +298,10 @@ function App() {
         setSeven("");
         setUnderDomain(false);
         setEscape(true);
-
         setSitesLoading(true);
-
         // removing the current icons
         setSites([]);
-
-        // setSuggestions(sug);
-
-        // const ansData = await getShortAnsResults(value);
-        // setAns(ansData);
-        // dispatch(setAllData([...ans, ...top5, ...commands]));
-        // setAllData([...ans, ...top5, ...commands]);
-        // debounceHandleRenderPage(e.target.value, hb);
-
-        // const data = await getBingSearch(e.target.value);
-        // setData(data);
-        // await handleRenderPage(data);
+        dispatch(setIconSites([]));
       } else {
         companySuggest(e.target.value);
       }
@@ -425,6 +311,7 @@ function App() {
   const callSearch = async () => {
     const dataSearch = await getBingSearch(value);
     setData(dataSearch);
+    dispatch(setIconData(dataSearch));
     await handleRenderPage(dataSearch);
   };
 
@@ -438,6 +325,25 @@ function App() {
     dispatch(setAllData([...ans, ...top5]));
   };
 
+  // Found useEffect
+  useEffect(() => {
+    const getData = setTimeout(() => {
+      if (value && hasWhiteSpace(value)) {
+        getShortAnsResults();
+      }
+    }, debounceTimeMs);
+    return () => clearTimeout(getData);
+  }, [value, pressEcs, top5Data]);
+
+  useEffect(() => {
+    const getData = setTimeout(() => {
+      if (value && !hasWhiteSpace(value)) {
+        getHeadline();
+      }
+    }, 200);
+    return () => clearTimeout(getData);
+  }, [sites, cursor]);
+
   useEffect(() => {
     const getData = setTimeout(() => {
       if (hasWhiteSpace(value)) {
@@ -448,7 +354,6 @@ function App() {
     return () => clearTimeout(getData);
   }, [value]);
 
-  // Found useEffect
   useEffect(() => {
     const selectedDomain = sites[cursor]?.domain;
     if (selectedDomain) {
@@ -467,9 +372,9 @@ function App() {
       setUnderDomainData([]);
     }
   }, [cursor, value, sites]);
+
   useEffect(() => {
     // new for hyperbeam set when fast type
-
     if (hasWhiteSpace(value)) {
       setOne("five");
       setTwo("Go");
@@ -478,62 +383,18 @@ function App() {
       setFive("up");
       setSix("more");
       setSeven("");
-      console.log("\ncursor", cursor);
       if (cursor === -1) {
         setRender(false);
         setHbCursor(-1);
-        console.log("yes");
       } else if (cursor >= 0) {
         setRender(true);
         setHbCursor(0);
-        console.log("no");
       }
     }
-
-    // old conition
-    // if (hasWhiteSpace(value) && cursor > 0) {
-    //   // change cursor condition for paste-value in input
-    //   setRender(true);
-    //   setHbCursor(0);
-    //   setOne("five");
-    //   setTwo("Go");
-    //   setThree("To Upvote");
-    //   setFour("enter");
-    //   setFive("up");
-    //   setSix("more");
-    //   setSeven("");
-    // }
-
-    // when paste value in input
-    // if (hasWhiteSpace(value) && cursor === -1) {
-    //   setRender(false);
-    //   setHbCursor(-1);
-    //   setOne("five");
-    //   setTwo("Go");
-    //   setThree("To Upvote");
-    //   setFour("enter");
-    //   setFive("up");
-    //   setSix("more");
-    //   setSeven("");
-    // }
-
-    // // when type value in input
-    // if (hasWhiteSpace(value) && cursor >= 0) {
-    //   setRender(true);
-    //   setHbCursor(0);
-    //   setOne("five");
-    //   setTwo("Go");
-    //   setThree("To Upvote");
-    //   setFour("enter");
-    //   setFive("up");
-    //   setSix("more");
-    //   setSeven("");
-    // }
   }, [cursor]);
 
   useEffect(() => {
     if (!hasWhiteSpace(value) && suggestionsActive && selectedSuggestion === -1) {
-      setSpaceClicked(false);
       setCursor(0);
       setSuggestionsActive(false);
       setSelectedSuggestion(-1);
@@ -541,16 +402,12 @@ function App() {
     }
 
     if (hasWhiteSpace(value) && !suggestionsActive && selectedSuggestion === -1) {
-      setSpaceClicked(true);
-      console.log(482);
       setCursor(-1);
       setSuggestionsActive(true);
     }
 
     if (!hasWhiteSpace(value)) {
-      setSpaceClicked(false);
       if (!sites.length) {
-        console.log(490);
         setCursor(-1);
       }
       setSuggestionsActive(true);
@@ -560,6 +417,8 @@ function App() {
       setSuggestionsActive(false);
       setSelectedSuggestion(-1);
       setSites([]);
+      dispatch(setIconSites([]));
+
       setEscape(false);
     }
 
@@ -568,6 +427,7 @@ function App() {
     }
     if (hasWhiteSpace(value) && suggestionsActive) {
       setSites([]);
+      dispatch(setIconSites([]));
     }
   }, [value]);
 
@@ -629,15 +489,12 @@ function App() {
     };
   }, []);
 
-  const handleKeyPressed = (e) => {
-    if (e.keyCode === 37 || e.keyCode === 39 || e.keyCode === 38 || e.keyCode === 40) {
-      e.preventDefault();
-    }
-  };
-
   const setIndexHyperbeamSliceFn = (r) => {
     setIndexHyperbeamSlice(r);
   };
+  useEffect(() => {
+    handleRenderPage(data);
+  }, [indexHyperbeamSlice]);
 
   const handleRenderPage = async (data) => {
     let tabs;
@@ -645,6 +502,7 @@ function App() {
       tabs = await renderPage(hb, data.slice(0, indexHyperbeamSlice + 5), windowId);
       if (tabs.length) {
         setTabs(tabs);
+        dispatch(setIconTabs(tabs));
         setSitesLoading(false);
         if (windowId !== tabs[0].windowId) {
           setWindowId(tabs[0].windowId);
@@ -653,21 +511,16 @@ function App() {
     }
   };
 
-  // const debounceHandleRenderPage = useMemo(() => debounce(handleRenderPage, 1000), [hb]);
-
-  // useEffect(() => {
-  //   if (suggestionsActive && !render && (value?.length > 0 || backupValue?.length > 0)) {
-  //     setPlaceHolder(`Search within the "${sites[cursor]?.name}"`);
-  //   }
-  // }, [cursor]);
-
-  useEffect(() => {
-    handleRenderPage(data);
-  }, [indexHyperbeamSlice]);
-
   const handleShowEnter = () => {
     setShowEnter(!showEnter);
   };
+
+  const handleKeyPressed = (e) => {
+    if (e.keyCode === 37 || e.keyCode === 39 || e.keyCode === 38 || e.keyCode === 40) {
+      e.preventDefault();
+    }
+  };
+
   const handleKeyDown = (e) => {
     // For suggestions
     // Down
@@ -677,7 +530,7 @@ function App() {
       downUp = 0;
       if (allData[0]?.type === "Suggestions") {
         setValue(allData[0]?.displayText);
-      } else if (allData[0]?.type === "Headlines") {
+      } else if (allData && allData[0]?.type === "Headlines") {
         setValue("");
         setPlaceHolder(`Search within the "${sites[cursor]?.name}"`);
       }
@@ -713,10 +566,8 @@ function App() {
     }
 
     // Enter
-    // if (e.keyCode === 13 && selectedSuggestion > 0 && !render) {
     if (
       hasWhiteSpace(value) &&
-      // allData[downUp]?.type !== "Answer" &&
       allData[downUpEnter]?.type !== "Answer" &&
       e.keyCode === 13 &&
       selectedSuggestion > -1 &&
@@ -731,7 +582,6 @@ function App() {
     }
 
     // Enter
-    // if (e.keyCode === 13 && selectedSuggestion === -1 && !render) {
     if (
       !hasWhiteSpace(value) &&
       allData[downUp]?.type !== "Answer" &&
@@ -739,25 +589,21 @@ function App() {
       selectedSuggestion === -1 &&
       !render
     ) {
-      // const query = value.replace(/\s/g, "+");
-      // const domain = `https://www.google.com/search?q=${query}`;
-      // window.open(`${domain}`, "__blank");
       setShowEnter(true);
     }
 
     // For pages
     // Found
-    if (value?.length > 2 && !underDomain && selectedPage === -1 && !suggestionsActive) {
-      setUnderDomain(true);
-    }
-
-    if (value?.length <= 2) {
-      setUnderDomain(false);
-    }
+    // if (value?.length > 2 && !underDomain && selectedPage === -1 && !suggestionsActive) {
+    //   setUnderDomain(true);
+    // }
+    // condition for the shop headline image in input
+    // if (value?.length <= 2) {
+    //   setUnderDomain(false);
+    // }
     // Down
     if (e.keyCode === 40 && !underDomain && selectedPage <= -1 && suggestionsActive) {
       setBackupValue(value);
-      // setValue("");
       setSelectedPage(selectedPage + 1);
       setUnderDomain(true);
     }
@@ -775,7 +621,6 @@ function App() {
     // Up
     if (e.keyCode === 38 && underDomain && selectedPage === 0) {
       setValue(backupValue);
-      // setBackupValue("");
       setSelectedPage(-1);
       setUnderDomain(false);
     }
@@ -819,6 +664,14 @@ function App() {
     if (e.keyCode === 39 && render) {
       hbCursor >= 0 && setHbCursor(hbCursor - 1);
     }
+    // space when in hyperbeam
+    if (e.keyCode === 32 && !isSpacePressed) {
+      setCursor(-1);
+      setIsSpacePressed(true);
+    }
+    if (e.keyCode === 32 && underDomain) {
+      setUnderDomain(false);
+    }
 
     // user hits escape in hyperbeam
     if (render && e.keyCode === 27) {
@@ -826,23 +679,16 @@ function App() {
       setHbCursor(-1);
       dispatch(setAllData([]));
       setPressEcs(pressEcs + 1);
-      setPlaceHolder(`Type "nyt" to see what happens`);
-      // setAllData([]);
-      // setAns([]);
-      // dispatch(setAnswerData([{ displayText: "Generating answer...", type: "Answer", ansData: "" }]));
     }
-    // if ((e.keyCode === 40 || e.keyCode === 38) && allData[selectedSuggestion]?.type === "Answer") {
-    //   setTwo("Bhavesh Test");
-    // } else {
-    //   setTwo("");
-    // }
     // user hits escape but not in hyperbeam
     if (e.keyCode === 27 && !render && hasWhiteSpace(value)) {
       setVisibleSites(false);
       setShowInstructions(false);
       setShowVideo(false);
       setSites([]);
+      dispatch(setIconSites([]));
       setTabs([]);
+      dispatch(setIconTabs([]));
       setOne("");
       setFour("");
       setTwo("");
@@ -854,10 +700,6 @@ function App() {
       setEscape(false);
       setSelectedPage(-1);
       dispatch(setAllData([]));
-      setPlaceHolder(`Type "nyt" to see what happens`);
-      // setAllData([]);
-      // setAns([]);
-      // dispatch(setAnswerData([{ displayText: "Generating answer...", type: "Answer", ansData: "" }]));
     }
     if (e.keyCode === 27) {
       setCursor(-1);
@@ -868,7 +710,9 @@ function App() {
       setShowInstructions(false);
       setShowVideo(false);
       setSites([]);
+      dispatch(setIconSites([]));
       setTabs([]);
+      dispatch(setIconTabs([]));
       setOne("");
       setFour("");
       setTwo("");
@@ -881,10 +725,6 @@ function App() {
       setUnderDomain(false);
       setSelectedPage(-1);
       dispatch(setAllData([]));
-      setPlaceHolder(`Type "nyt" to see what happens`);
-      // setAllData([]);
-      // setAns([]);
-      // dispatch(setAnswerData([{ displayText: "Generating answer...", type: "Answer", ansData: "" }]));
     }
   };
 
@@ -903,7 +743,6 @@ function App() {
   useEffect(() => {
     const run = async () => {
       if (underDomain && sites?.length > 0 && sites[cursor]) {
-        // setValue("");
         setUnderDomainFilterd([]);
         setUnderDomainData([]);
       }
@@ -933,7 +772,6 @@ function App() {
           key={index}
           selected={selectedSuggestion === index}
           colors={selectedSuggestion < 6 && selectedSuggestion > 0 ? colors : {}}
-          // handleRenderPage={(query) => handleRenderPage(query)}
           handleRenderPage={handleRenderPage}
         />
       );
@@ -991,7 +829,6 @@ function App() {
                   </div>
                 ) : (
                   <></>
-                  // <BiSearch className="icon" />
                 )}
                 {escape && (
                   <div className="escape">
@@ -1037,8 +874,10 @@ function App() {
                               <Para type={type}>{type}</Para>
                             </div>
                             <div className="content">
-                              {allData.length ? (
-                                allData.map((data, index) => ansDetails(type, data, index))
+                              {allData?.length ? (
+                                allData?.map((data, index) => ansDetails(type, data, index))
+                              ) : noDataFound ? (
+                                <p>No data</p>
                               ) : (
                                 <p>Generating answer...</p>
                               )}
@@ -1102,14 +941,16 @@ function App() {
     axios
       .get(query, {})
       .then((response) => {
-        const sites = response.data;
-        setSites(
-          sites.map((site) => ({
-            ...site,
-            count: domains.find((d) => d.domain_name === site.domain)?.count || 0,
-          }))
-        );
-        setCursor(0);
+        const sites = response?.data?.map((site) => ({
+          ...site,
+          count: domains.find((d) => d.domain_name === site.domain)?.count || 0,
+        }));
+        setSites(sites);
+        dispatch(setIconSites(sites));
+        setSitesLoading(false);
+        if (isSpacePressed) {
+          setCursor(0);
+        }
       })
       .catch((error) => {
         throw error;

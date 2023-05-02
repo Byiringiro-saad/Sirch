@@ -7,7 +7,8 @@
 /* eslint-disable no-unsafe-optional-chaining */
 /* eslint-disable react/prop-types */
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 import styled from "styled-components";
 import ContentLoader from "react-content-loader";
 
@@ -16,9 +17,9 @@ import { openNewTab } from "../action/bingAction";
 import { addDomain } from "../action/supabaseAction";
 
 function Icons({
-  sites,
-  tabs,
-  data,
+  // sites,
+  // tabs,
+  // data,
   handleRender,
   render,
   cursor,
@@ -29,15 +30,27 @@ function Icons({
   loading,
   setIndexHyperbeamSlice,
 }) {
+  const sites = useSelector((state) => state.allDetailsReducer.iconSites);
+  const tabs = useSelector((state) => state.allDetailsReducer.iconTabs);
+  const data = useSelector((state) => state.allDetailsReducer.iconData);
+  // console.log("Icons sites", sites);
+  // console.log("Icons tabs", tabs);
+  // console.log("Icons data", data);
+
   const [currentNav, setCurrentNav] = useState(1);
   const [tabsPerNav] = useState(4);
   const [currentTab, setCurrentTab] = useState(0);
+
   const indexOfLastTab = currentNav * tabsPerNav;
   const indexOfFirstTab = indexOfLastTab - tabsPerNav;
+
   const currentDomainRecord = sites?.slice(indexOfFirstTab, indexOfLastTab);
   const currentBingRecord = tabs?.slice(indexOfFirstTab, indexOfLastTab);
+  // console.log("\ncurrentBingRecord", currentBingRecord, "currentDomainRecord", currentDomainRecord, new Date());
+
   const nNavsForDomain = Math.ceil(sites?.length / tabsPerNav);
   const nNavsForBing = Math.ceil(tabs?.length / tabsPerNav);
+
   const nextNav = () => {
     if (currentNav !== nNavsForBing) {
       setCurrentNav(currentNav + 1);
@@ -75,7 +88,10 @@ function Icons({
       setCursor(cursor - 1);
       setCurrentTab(cursor - 1 + tabsPerNav * (currentNav - 1));
     } else if (e.keyCode === 39 && cursor < tabs.length - 1) {
-      setCursor(cursor + 1);
+      setCursor(0);
+      if (cursor >= 0) {
+        setCursor(cursor + 1);
+      }
       setCurrentTab(cursor + 1 + tabsPerNav * (currentNav - 1));
     } else if (e.keyCode === 39 && cursor < sites.length - 1) {
       setCursor(cursor + 1);
@@ -93,26 +109,25 @@ function Icons({
     }
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (sites.length === 0 && tabs.length === 0) {
       setCursor(-1);
     }
   }, [sites, tabs]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     tabs.length > 0 && handleRender(tabs[currentTab].id);
   }, [cursor]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     window.addEventListener("keydown", handleKeyDown);
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
   });
 
-  React.useEffect(() => {
+  useEffect(() => {
     setIndexHyperbeamSlice(indexOfFirstTab);
-    // console.log("indexOfFirstTab", indexOfFirstTab);
   }, [indexOfFirstTab]);
 
   const getDomain = (url) => {
@@ -124,7 +139,6 @@ function Icons({
     handleRender(id);
     setCursor(index);
   };
-
   return (
     <Container visible={visibleSites} render={render}>
       {loading ? (
