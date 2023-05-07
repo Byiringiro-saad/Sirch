@@ -74,7 +74,7 @@ function App() {
 
   const debounceTimeMs = 2000;
 
-  const [placeHolder, setPlaceHolder] = useState("Ask a question");
+  const [placeHolder, setPlaceHolder] = useState("type 'nyt' and see what happens.");
   const [showVideo, setShowVideo] = useState(false);
   const [showEnter, setShowEnter] = useState(false);
   const [showInvestOne, setShowInvestOne] = useState(false);
